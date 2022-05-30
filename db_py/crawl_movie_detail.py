@@ -1,6 +1,7 @@
 import pymysql
 import requests
 from bs4 import BeautifulSoup
+from init_db import open_db
 
 def get_data_from_movie_url(url):
     """
@@ -33,11 +34,26 @@ def get_data_from_movie_url(url):
         netizen_rate = float(netizen_rate) if netizen_rate != "" else None
         
         
-        print(netizen_rate)
+        # print(title)
+        return title
 
     else:
         return -1
 
+def insertTitle(title,conn,cur) : 
+    sql ="""insert into movie (title) 
+        values (%s);"""
+    print(title)
+    cur.execute(sql, title)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+
 if __name__ == "__main__":
     url = "https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
-    get_data_from_movie_url(url)
+    [conn,cur] = open_db()
+
+    insertTitle(get_data_from_movie_url(url),conn,cur)
+

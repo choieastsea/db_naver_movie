@@ -1,8 +1,10 @@
-drop database naver_movie;
-create database naver_movie;
-use naver_movie;
+drop database moviedb;
+create database moviedb;
+use moviedb;
 
 create table movie(
 	mid INT AUTO_INCREMENT PRIMARY KEY,
     title varchar(50)
 );
+
+select * from movie;
