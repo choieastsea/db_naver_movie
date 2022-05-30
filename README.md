@@ -25,4 +25,4 @@ Crawling Naver Movie and Make Web Service with python, js
         conn.close()
 
     ```
-    - libs : pymysql, requests, bs4
+    - libs : pymysql, requests, bs4, lxml
