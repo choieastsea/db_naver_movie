@@ -1,2 +1,5 @@
 /venv
 init_db.py
+node_modules
+package-lock.json
+*.pyc
