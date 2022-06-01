@@ -1,5 +1,3 @@
-from math import atan2
-from xml.dom.minidom import Element
 import pymysql
 import requests
 from bs4 import BeautifulSoup
