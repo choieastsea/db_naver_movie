@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from unicodedata import name
 import pymysql
 import requests
 from bs4 import BeautifulSoup
 
 # 주요정보 탭
-def get_basic(basic_url):
+def get_basic(basictab_url):
     url="https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
@@ -24,8 +25,10 @@ def get_basic(basic_url):
     makingnote +=element[0].text
     print(makingnote)
 
-# 배우/제작진 탭
-def get_actor(actor_url) :
+    return [story,makingnote]
+
+# 배우
+def get_actor(actortab_url) :
     url="https://movie.naver.com/movie/bi/mi/detail.naver?code=192608"
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
@@ -91,7 +94,144 @@ def get_actor(actor_url) :
             year = None
         print(year)
 
+        
 
+
+    # 단역
+    sub_actor = soup.select('#subActorList span')
+    for sub in sub_actor:
+        #단역들 이름
+        e_name = sub.select('a')
+
+        if(len(e_name[0].text)>0):
+            e_namea = e_name[0].text
+        else:
+            e_namea = None
+        print(e_namea)
+
+        # 단역들 배역 이름
+        em_name = sub.select('em')
+        if(len(em_name[0].text)>0):
+            e_namea = em_name[0].text
+        else:
+            e_namea = None
+        print(e_namea)
+        
+# 감독
+def get_director(actortab_url):
+    url="https://movie.naver.com/movie/bi/mi/detail.naver?code=204138"
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text,"lxml")
+
+    producer = soup.select('div.dir_obj')
+
+    for pr in producer:
+        # 감독 썸네일
+        thumbnail = pr.select('p.thumb_dir > a > img')
+        if(len(thumbnail)>0):
+            img = thumbnail[0]['src']
+        else:
+            img = None
+        print(img)
+
+        #감독정보 url
+        url = pr.select('p.thumb_dir > a')
+        info_url="https://movie.naver.com"
+        if(len(url)>0):
+            info_url += url[0]['href']
+        else:
+            info_url = None
+        print(info_url)
+
+        #감독 이름
+        dir_name = pr.select('div.dir_product > a')
+        if(len(dir_name)>0):
+            name=dir_name[0].text
+        else:
+            name = None
+        print(name)
+
+        #감독 영어이름
+        dir_ename = pr.select('em.e_name')
+        ename=dir_ename[0].text
+        if len(ename)==0 :
+            ename = None
+        print(ename)
+
+        #다른작품
+        other_list = pr.select('.other_mv_group ul.other_list li')
+        for other in other_list:
+            #영화 이름
+            o_title = other.select('.other_mv > a')
+            title = o_title[0].text
+            print(title)
+
+            #역할
+            arr = []
+            o_does = other.select('.other_mv > p')
+            does = o_does[0].text
+            does=does.replace('\t','').replace('\r','').replace('\n','')
+            arr = does.split(",")
+            print(arr)
+
+            #제작년도
+            o_year = other.select('.made_since > dt')
+            if(len(o_year)>0):
+                year = o_year[0].text
+            else:
+                year = None
+            print(year)
+
+            #제작국가
+            o_country = other.select('.made_since > dd')
+            if(len(o_country)>0):
+                country = o_country[0].text.replace('\t','').replace('\r','').replace('\n','')
+            else:
+                country = None
+            print(country)
+
+# 제작진
+def get_producer(actortab_url):
+    url="https://movie.naver.com/movie/bi/mi/detail.naver?code=204138"
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text,"lxml")
+
+    staff = soup.select('div.staff tr')
+
+    for st in staff:
+        span = st.select('span')
+        for sp in span :
+            #정보 url
+            str_url = "https://movie.naver.com"
+            url =  sp.select('a')
+            if(len(url)>0):
+                str_url += url[0]['href']
+            else:
+                str_url = None
+            print(str_url)
+
+            
+
+            # 영어이름 , 담당
+            ename = sp.select('em')
+            ename_s = ename[0].text
+            part_s = ename[1].text
+            if(len(ename_s)==0):
+                ename_s=None
+            print(ename_s)
+            print(part_s)
+
+
+            tmp=""
+            if(ename_s == None) : 
+                tmp = ""
+            # 이름
+            name = sp.select('a')
+            if(len(name)>0):
+                name_s = name[0].text
+            else:
+                name_s = sp.text.replace(tmp,'').replace(part_s,'').replace('\t','').replace('\r','').replace('\n','')
+            print(name_s)
 
 
 @dataclass
@@ -107,4 +247,4 @@ class Actor:
 
 
 if __name__ == '__main__':
-    get_actor(0)
+    get_producer(0)

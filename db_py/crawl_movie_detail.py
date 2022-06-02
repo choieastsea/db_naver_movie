@@ -38,7 +38,7 @@ def get_data_from_movie_url(url):
         img_src = img_src_raw[0]["src"] if len(img_src_raw) !=0 else None
         movie_intro = []
         for em in movie_intro_raw:
-            movie_intro.append(em.text)
+            movie_intro.append(int(em['href'].split('=')[1]))
         movie_intro = movie_intro if len(movie_intro) != 0 else None
         movie_country = movie_country_raw[0].text if len(movie_country_raw) !=0 else None
         running_time = int(running_time_raw[0].text.strip()[:-1]) if len(running_time_raw) !=0 else None
@@ -56,8 +56,8 @@ def get_data_from_movie_url(url):
         age_40s_ratio = int(age_40s_ratio_raw[0].text.replace("%","")) if len(age_40s_ratio_raw) !=0 else None
         age_50s_ratio = int(age_50s_ratio_raw[0].text.replace("%","")) if len(age_50s_ratio_raw) !=0 else None
         aka = aka_raw[0].text.strip() if len(aka_raw) !=0 else None
-        print(is_running)
-        return title
+        print(movie_intro)
+        return movie_intro
 
     else:
         print("access denied")
@@ -233,10 +233,10 @@ if __name__ == "__main__":
     url2 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=17149"
     url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     urlPhoto = "https://movie.naver.com/movie/bi/mi/photoView.naver?code=192608"
-    [conn,cur] = open_db()
-    # get_data_from_movie_url(url2)
+    # [conn,cur] = open_db()
+    get_data_from_movie_url(url2)
     # get_data_from_photo_url(url1.replace("basic","photoView"))
     # get_data_from_video_url(url1.replace("basic","media"))
-    get_data_from_rate_url(url1.replace("basic","point"))
+    # get_data_from_rate_url(url1.replace("basic","point"))
     # insertTitle(get_data_from_movie_url(url),conn,cur)
 
