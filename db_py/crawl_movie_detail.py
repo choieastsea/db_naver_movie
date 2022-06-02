@@ -10,6 +10,7 @@ def get_data_from_movie_url(url):
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, "lxml")
+        is_running_raw = soup.select("#content > div.article > div.mv_info_area > div.mv_info > h3 > a.opening > em")
         title_raw = soup.select("#content > div.article > div.mv_info_area > div.mv_info > h3 > a:nth-child(1)")
         title_eng_raw = soup.select("#content > div.article > div.wide_info_area > div.mv_info > h3 > strong")
         img_src_raw = soup.select("#content > div.article > div.wide_info_area > div.poster > a > img")
@@ -27,7 +28,11 @@ def get_data_from_movie_url(url):
         age_40s_ratio_raw = soup.select("#content > div.article > div.wide_info_area > div.viewing_graph > div > div.bar_graph > div:nth-child(4) > strong.graph_percent")
         age_50s_ratio_raw = soup.select("#content > div.article > div.wide_info_area > div.viewing_graph > div > div.bar_graph > div:nth-child(5) > strong.graph_percent")
         
+        aka_raw = soup.select("#content > div.article > div:nth-child(7) > div:nth-child(3) > div > div.aka_info > p")
 
+        # db에 들어갈 타입으로 정리한 attrs
+        movie_code = url.split("code=")[1]
+        is_running = True if len(is_running_raw) !=0 else False
         title = str(title_raw[0].text) if len(title_raw) != 0 else None
         title_eng = str(title_eng_raw[0].text.split('\n')[0].strip()) if len(title_eng_raw) !=0 else None
         img_src = img_src_raw[0]["src"] if len(img_src_raw) !=0 else None
@@ -50,8 +55,8 @@ def get_data_from_movie_url(url):
         age_30s_ratio = int(age_30s_ratio_raw[0].text.replace("%","")) if len(age_30s_ratio_raw) !=0 else None
         age_40s_ratio = int(age_40s_ratio_raw[0].text.replace("%","")) if len(age_40s_ratio_raw) !=0 else None
         age_50s_ratio = int(age_50s_ratio_raw[0].text.replace("%","")) if len(age_50s_ratio_raw) !=0 else None
-        
-        print(age_10s_ratio)
+        aka = aka_raw[0].text.strip() if len(aka_raw) !=0 else None
+        print(is_running)
         return title
 
     else:
@@ -113,11 +118,50 @@ def get_data_from_rate_url(url):
         
         critic_detail_raw = soup.select("#content > div.article > div.section_group.section_group_frst > div:nth-child(6) > div > div.reporter > ul > li")
         critic_2_detail_raw = soup.select("#content > div.article > div.section_group.section_group_frst > div:nth-child(6) > div > div.score140 > div > ul > li")
-        print(len(critic_2_detail_raw))
         
-        male_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_gender > div:nth-child(1) > div > strong.graph_point")
-        female_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_gender > div:nth-child(2) > div > strong.graph_point")
+        netizen_male_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_gender > div:nth-child(1) > div > strong.graph_point")
+        netizen_female_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_gender > div:nth-child(2) > div > strong.graph_point")
+        watcher_male_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_gender > div:nth-child(1) > div > strong.graph_point")
+        watcher_female_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_gender > div:nth-child(2) > div > strong.graph_point")
         
+        netiezen_age_10s_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_age > div.grp_box.high_percent > strong.graph_point")
+        netiezen_age_20s_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_age > div:nth-child(2) > strong.graph_point")
+        netiezen_age_30s_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_age > div:nth-child(3) > strong.graph_point")
+        netiezen_age_40s_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_age > div:nth-child(4) > strong.graph_point")
+        netiezen_age_50s_rate_raw = soup.select("#netizen_point_graph > div > div.grp_wrap > div.grp_age > div:nth-child(5) > strong.graph_point")
+        watcher_age_10s_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_age > div.grp_box.high_percent > strong.graph_point")
+        watcher_age_20s_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_age > div:nth-child(2) > strong.graph_point")
+        watcher_age_30s_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_age > div:nth-child(3) > strong.graph_point")
+        watcher_age_40s_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_age > div:nth-child(4) > strong.graph_point")
+        watcher_age_50s_rate_raw = soup.select("#actual_point_graph > div.grp_wrap > div.grp_age > div:nth-child(5) > strong.graph_point")
+
+        netizen_point_raw_list = soup.select("#netizen_point_graph > div > div.grp_sty4 > ul > li")
+        watcher_point_raw_list = soup.select("#actual_point_graph > div.grp_sty4 > ul > li")
+        ll = []
+        for netizen_point_raw in netizen_point_raw_list:
+            ll.append({netizen_point_raw.select("strong")[0].text : netizen_point_raw.select("span.grp_score")[0].text})
+        # print(ll)
+        ll2 = []
+        for watcher_point_raw in watcher_point_raw_list:
+            ll2.append({watcher_point_raw.select("strong")[0].text : watcher_point_raw.select("span.grp_score")[0].text})
+        # print(ll2)
+
+        # 관람객 평점, 한줄평은 iframe 통해서 접근해야함..! 일단 1페이지만
+        iframe_url_raw = soup.select("#pointAfterListIframe")
+        iframe_url = f'https://movie.naver.com{iframe_url_raw[0]["src"]}' if len(iframe_url_raw) !=0 else None
+        iframe_response = requests.get(iframe_url)
+        if iframe_response.status_code == 200:
+            soup = BeautifulSoup(iframe_response.text, "lxml")
+            major_watcher_review_list_raw = soup.select("body > div > div > div.score_result > ul > li")
+            # print(len(major_watcher_review_list_raw))
+            for review in major_watcher_review_list_raw:
+                score = review.select("div.star_score > em")[0].text
+                isWatcher = review.select("div.score_reple > p > span.ico_viewer")[0].text
+                review_content = review.select("div.score_reple>p>span:nth-child(2)")[0].text.strip()
+                reviewer = review.select("div.score_reple>dl>dt>em>a>span")[0].text
+                print(f"평점 : {score} {isWatcher and '[관람객]'} {review_content} \n by {reviewer}\n================")
+        else:
+            print("iframe permission denied")
         
         netizen_rate = ""
         for em in netizen_rate_raw:
@@ -138,20 +182,35 @@ def get_data_from_rate_url(url):
         critic_detail = []
         for el in critic_detail_raw:
             critic_name = el.select("div.reporter_line > dl.p_review > dt > a")[0].text
+            critic_code = el.select("div.reporter_line > dl.p_review > dt > a")[0]["href"].split("code=")[1]
             critic_title = el.select("div.reporter_line > dl.p_review > dd")[0].text
             critic_rate = el.select("div.re_score_grp > div.reporter_score > div.star_score > em")[0].text
             critic_content = el.select("p.tx_report")[0].text
-            # print(critic_name,critic_title, critic_rate)
+            # print(critic_name,critic_code,critic_title, critic_rate)
             # print(critic_content)
             # print("===================")
         for el in critic_2_detail_raw:
             critic_name = el.select("div.score_reple > dl > dd")[0].text.replace("|","").strip()
             critic_title = el.select("div.score_reple > p")[0].text
             critic_rate = el.select("div.star_score > em")[0].text
-            print(critic_name,critic_title, critic_rate)
-        male_rate = float(male_rate_raw[0].text) if len(male_rate_raw) !=0 else None 
-        female_rate = float(female_rate_raw[0].text) if len(female_rate_raw) !=0 else None 
+            # print(critic_name,critic_title, critic_rate)
+        netizen_male_rate = float(netizen_male_rate_raw[0].text) if len(netizen_male_rate_raw) !=0 else None 
+        netizen_female_rate = float(netizen_female_rate_raw[0].text) if len(netizen_female_rate_raw) !=0 else None 
+        watcher_male_rate = float(watcher_male_rate_raw[0].text) if len(watcher_male_rate_raw) !=0 else None
+        watcher_female_rate = float(watcher_female_rate_raw[0].text) if len(watcher_female_rate_raw) !=0 else None
+        netiezen_age_10s_rate = float(netiezen_age_10s_rate_raw[0].text) if len(netiezen_age_10s_rate_raw) !=0 else None
+        netiezen_age_20s_rate = float(netiezen_age_20s_rate_raw[0].text) if len(netiezen_age_20s_rate_raw) !=0 else None
+        netiezen_age_30s_rate = float(netiezen_age_30s_rate_raw[0].text) if len(netiezen_age_30s_rate_raw) !=0 else None
+        netiezen_age_40s_rate = float(netiezen_age_40s_rate_raw[0].text) if len(netiezen_age_40s_rate_raw) !=0 else None
+        netiezen_age_50s_rate = float(netiezen_age_50s_rate_raw[0].text) if len(netiezen_age_50s_rate_raw) !=0 else None
+        watcher_age_10s_rate = float(watcher_age_10s_rate_raw[0].text) if len(watcher_age_10s_rate_raw) !=0 else None
+        watcher_age_20s_rate = float(watcher_age_20s_rate_raw[0].text) if len(watcher_age_20s_rate_raw) !=0 else None
+        watcher_age_30s_rate = float(watcher_age_30s_rate_raw[0].text) if len(watcher_age_30s_rate_raw) !=0 else None
+        watcher_age_40s_rate = float(watcher_age_40s_rate_raw[0].text) if len(watcher_age_40s_rate_raw) !=0 else None
+        watcher_age_50s_rate = float(watcher_age_50s_rate_raw[0].text) if len(watcher_age_50s_rate_raw) !=0 else None
 
+        # print(watcher_age_50s_rate)
+        # print(watcher_age_10s_rate)
 
     else:
         print("permission denied")
@@ -172,11 +231,12 @@ def insertTitle(title,conn,cur) :
 if __name__ == "__main__":
     url1 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
     url2 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=17149"
+    url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     urlPhoto = "https://movie.naver.com/movie/bi/mi/photoView.naver?code=192608"
     [conn,cur] = open_db()
     # get_data_from_movie_url(url2)
     # get_data_from_photo_url(url1.replace("basic","photoView"))
     # get_data_from_video_url(url1.replace("basic","media"))
-    # get_data_from_rate_url(url1.replace("basic","point"))
+    get_data_from_rate_url(url1.replace("basic","point"))
     # insertTitle(get_data_from_movie_url(url),conn,cur)
 
