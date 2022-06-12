@@ -6,7 +6,18 @@
   height: 40vmin;
   pointer-events: none;
 }
-
+.header {
+  text-decoration: none;
+  color: cornflowerblue;
+}
+.content {
+  width: 1000px;
+  margin: 0 auto;
+}
+nav>ul{
+  /* for pagination */
+  justify-content: center;
+}
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
