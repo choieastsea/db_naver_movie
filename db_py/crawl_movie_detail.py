@@ -1,3 +1,4 @@
+from ast import AsyncFunctionDef
 import pymysql
 import requests
 from bs4 import BeautifulSoup
@@ -101,6 +102,33 @@ def get_data_from_video_url(url):
         print("permission denied")
         return -1
 
+def get_data_from_quotes_url(url):
+    curpage = 1
+    while True:
+        # print(f"request on page={curpage}")
+        response = requests.get(f"{url}{curpage}")
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "lxml")
+            daum = soup.select(f"#pagerTagAnchor{curpage+1} > em")
+            # 한 페이지 내에서 해야할 일
+            quotes = soup.select("#iframeDiv > ul > li")
+            for quote in quotes:
+                comment_raw = quote.select("div.lines_area2>p.one_line")
+                character_raw = quote.select("div.lines_area2>p.char_part>span")
+                actor_raw = quote.select("div.lines_area2>p.char_part>a")
+                thumbnail_raw = quote.select("p.thumb>a>img")
+                comment = comment_raw[0].text if len(comment_raw) !=0  else None
+                character = character_raw[0].text if len(character_raw) !=0 else None
+                actor = actor_raw[0]["href"].split("code=")[1] if len(actor_raw) !=0 else None
+                thumbnal = thumbnail_raw[0]["src"] if len(thumbnail_raw) !=0 else None
+                print(f"{comment}\n{character}\n{actor}\n{thumbnal}")
+            if len(daum) == 0:
+                break
+            curpage += 1
+
+        else:
+            print(f"quotes permission denied in page {curpage}")
+            return -1
 
 def get_data_from_rate_url(url):
     """
@@ -148,20 +176,41 @@ def get_data_from_rate_url(url):
 
         # 관람객 평점, 한줄평은 iframe 통해서 접근해야함..! 일단 1페이지만
         iframe_url_raw = soup.select("#pointAfterListIframe")
-        iframe_url = f'https://movie.naver.com{iframe_url_raw[0]["src"]}' if len(iframe_url_raw) !=0 else None
-        iframe_response = requests.get(iframe_url)
-        if iframe_response.status_code == 200:
-            soup = BeautifulSoup(iframe_response.text, "lxml")
-            major_watcher_review_list_raw = soup.select("body > div > div > div.score_result > ul > li")
-            # print(len(major_watcher_review_list_raw))
-            for review in major_watcher_review_list_raw:
-                score = review.select("div.star_score > em")[0].text
-                isWatcher = review.select("div.score_reple > p > span.ico_viewer")[0].text
-                review_content = review.select("div.score_reple>p>span:nth-child(2)")[0].text.strip()
-                reviewer = review.select("div.score_reple>dl>dt>em>a>span")[0].text
-                print(f"평점 : {score} {isWatcher and '[관람객]'} {review_content} \n by {reviewer}\n================")
-        else:
-            print("iframe permission denied")
+        print(f'https://movie.naver.com{iframe_url_raw[0]["src"]}')
+        curpage = 1
+        while True:
+            iframe_url = f'https://movie.naver.com{iframe_url_raw[0]["src"]}&page={curpage}'
+            print(iframe_url)
+            iframe_response = requests.get(iframe_url)
+            if iframe_response.status_code == 200:
+                soup = BeautifulSoup(iframe_response.text, "lxml")
+                daum = soup.select(f"#pagerTagAnchor{curpage+1} > em")
+
+                major_watcher_review_list_raw = soup.select("body > div > div > div.score_result > ul > li")
+                # print(len(major_watcher_review_list_raw))
+                for review in major_watcher_review_list_raw:
+                    score_raw = review.select("div.star_score > em")
+                    isWatcher_raw = review.select("div.score_reple > p > span.ico_viewer")
+                    if len(isWatcher_raw) == 0:
+                        #관람객이 아닌 경우
+                        review_content_raw = review.select("div.score_reple>p>span")
+                    else:
+                        #관람객인 경우
+                        review_content_raw = review.select("div.score_reple>p>span:nth-child(2)")
+                    reviewer_raw = review.select("div.score_reple>dl>dt>em>a>span")
+
+                    score = score_raw[0].text if len(score_raw) !=0 else None
+                    isWatcher = True if len(isWatcher_raw) !=0 else False
+                    review_content = review_content_raw[0].text.strip() if len(review_content_raw) !=0 else None
+                    reviewer = reviewer_raw[0].text if len(reviewer_raw) !=0 else None
+
+                    print(f"평점 : {score} {'관람객' if isWatcher else '안본사람'} {review_content} \n by {reviewer}\n================")
+                if len(daum) == 0:
+                    break
+                curpage += 1
+
+            else:
+                print("iframe permission denied")
         
         netizen_rate = ""
         for em in netizen_rate_raw:
@@ -213,7 +262,7 @@ def get_data_from_rate_url(url):
         # print(watcher_age_10s_rate)
 
     else:
-        print("permission denied")
+        print("rate permission denied")
         return -1
 
 
@@ -227,16 +276,51 @@ def insertTitle(title,conn,cur) :
     conn.close()
 
 
+def get_data_from_review_url(url):
+    movie_code = url.split('code=')[1]
+    curpage = 1
+    while True:
+        # print(f"request on page={curpage}")
+        response = requests.get(f"{url}&page={curpage}")
+        print(f"request to url {url}&page={curpage}")
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "lxml")
+            daum = soup.select(f"#pagerTagAnchor{curpage+1} > em")
+            # 한 페이지 내에서 해야할 일
+            review_list = soup.select("#reviewTab > div > div > ul > li")
+            # print(review_list)
+            for review in review_list:
+                reviewer_code = review.select("a")[0]["onclick"].split("showReviewDetail(")[1][:-1]
+                print(reviewer_code, movie_code)
+                response = requests.get("https://movie.naver.com/movie/bi/mi/reviewread.naver?nid={reviewer_code}&code={movie_code}&order=#tab")
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, "lxml")
+                    review_title_raw = soup.select("#content > div.article > div.obj_section.noline.center_obj > div.review > div.top_behavior > strong")
+                    review_title = review_title_raw[0].text if len(review_title_raw) !=0 else None
+                    print(review_title)
+                else:
+                    print(f"reviews permission denied on url https://movie.naver.com/movie/bi/mi/reviewread.naver?nid={reviewer_code}&code={movie_code}&order=#tab")    
+            if len(daum) == 0:
+                break
+            curpage += 1
+
+        else:
+            print(f"reviews permission denied in page {curpage}")
+            return -1
+
 
 if __name__ == "__main__":
     url1 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
     url2 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=17149"
     url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     urlPhoto = "https://movie.naver.com/movie/bi/mi/photoView.naver?code=192608"
+    urlQuotes = "https://movie.naver.com/movie/bi/mi/script.naver?code=192608&order=best&nid=&page="    #페이지 1붙혀서 시작
     # [conn,cur] = open_db()
-    get_data_from_movie_url(url2)
+    # get_data_from_movie_url(url2)
     # get_data_from_photo_url(url1.replace("basic","photoView"))
     # get_data_from_video_url(url1.replace("basic","media"))
     # get_data_from_rate_url(url1.replace("basic","point"))
+    get_data_from_review_url(url1.replace("basic","review"))
+    # get_data_from_quotes_url(urlQuotes)
     # insertTitle(get_data_from_movie_url(url),conn,cur)
 
