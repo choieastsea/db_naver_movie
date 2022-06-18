@@ -22,6 +22,7 @@ export const SearchResultPage = () => {
   }, [userInput]);
   return resultData?.result === "success" ? (
     <div>
+      {/* 정렬도 해야함!!!! */}
       {dataList.length !== 0 ? (
         <ul>
           {dataList.map((e) => (
@@ -29,7 +30,7 @@ export const SearchResultPage = () => {
           ))}
         </ul>
       ) : (
-        <p>"{userInput}"으로 시작하는 영화 또는 인물정보가 없습니다</p>
+        <p>"{userInput}"으로 시작하는 정보가 없습니다</p>
       )}
     </div>
   ) : (

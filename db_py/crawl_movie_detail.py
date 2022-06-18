@@ -478,6 +478,8 @@ def get_comment_data(code):
                             reviewer_raw) != 0 else None
                         rate_list.append(
                             [VIEWER if isWatcher else NETIZEN, score, review_content, reviewer])
+                        if len(rate_list) >=100:
+                            return rate_list
                         # print(f"평점 : {score} {'관람객' if isWatcher else '안본사람'} {review_content} \n by {reviewer}\n================")
                     if len(daum) == 0:
                         break
@@ -589,4 +591,6 @@ if __name__ == "__main__":
     url2 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=17149"
     url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     # [conn,cur] = open_db()
-    get_data_from_review_url(code_test)
+    # get_data_from_review_url(code_test)
+    # print(get_photo_data(code))
+    print(get_comment_data(code))
