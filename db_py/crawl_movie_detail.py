@@ -45,7 +45,7 @@ def get_viewing_trend_data(code):
         age_50s_ratio = int(age_50s_ratio_raw[0].text.replace(
             "%", "")) if len(age_50s_ratio_raw) != 0 else None
     else:
-        print(f"access denied on get_viewing_trend_data, url : {url}")
+        # print(f"access denied on get_viewing_trend_data, url : {url}")
         return None
     return [age_10s_ratio, age_20s_ratio, age_30s_ratio, age_40s_ratio, age_50s_ratio]
 
@@ -90,6 +90,7 @@ def get_moie_data(code):
         is_running = True if len(is_running_raw) != 0 else False
         # 한국어 제목
         title = str(title_raw[0].text) if len(title_raw) != 0 else None
+        print(title)
         # 영어 제목
         title_eng = str(title_eng_raw[0].text.split(
             '\n')[0].strip()) if len(title_eng_raw) != 0 else None
@@ -104,7 +105,9 @@ def get_moie_data(code):
         movie_country = movie_country_raw[0].text if len(
             movie_country_raw) != 0 else None
         # 영화 시간
-        running_time = int(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip())) if len(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip())) != 0 else None
+        running_time = 0
+        if len(running_time_raw)>0:
+            running_time = int(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip()[:-1])) if len(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip()[:-1])) != 0 else None
         # 영화 개봉일 -> 아마 이대로 db 저장해도 될듯?
         opening_date = ''
         for em in opening_date_raw:
@@ -122,11 +125,11 @@ def get_moie_data(code):
 
         # aka
         aka = aka_raw[0].text.strip() if len(aka_raw) != 0 else None
-        print(movie_intro)
+        # print(movie_intro)
         return [movie_code, is_running, title, title_eng, img_src, movie_intro, movie_country, running_time, opening_date, domestic_age, foreign_age, cumulative_audience, aka]
 
     else:
-        print("access denied")
+        # print("access denied")
         return None
 
 
@@ -147,7 +150,7 @@ def get_photo_data(code):
             photo_url_list.append(
                 [code, photo.select("a > img")[0]["src"]])
     else:
-        print("access denied")
+        # print("access denied")
         return None
     return photo_url_list
 
@@ -175,11 +178,11 @@ def get_video_data(code):
                 title = video.select("img")[0]["alt"]
                 # 비디오 업로드 날짜
                 video_date = video.select("p.video_date")[0].text
-                # print(f'{title}\n{thumbnail_img_src}\n{link}\n{video_date}\n===================')
+                # # print(f'{title}\n{thumbnail_img_src}\n{link}\n{video_date}\n===================')
                 video_data_list.append(
                     [code, title, thumbnail_img_src, link, video_date])
     else:
-        print("permission denied")
+        # print("permission denied")
         return None
     return video_data_list
 
@@ -192,7 +195,7 @@ def get_quotes_data(code):
     curpage = 1
     quote_list = []
     while True:
-        # print(f"request on page={curpage}")
+        # # print(f"request on page={curpage}")
         response = requests.get(f"{url}{curpage}")
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "lxml")
@@ -227,16 +230,16 @@ def get_quotes_data(code):
                 # 추천 유저
                 user_id = usesr_id_raw[0].text if len(
                     usesr_id_raw) != 0 else None
-                # print(f"{comment}\n{character}\n{actor}\n{thumbnal}")
+                # # print(f"{comment}\n{character}\n{actor}\n{thumbnal}")
                 quote_list.append(
                     [code, people_code, comment, character, thumbnal, good, user_id])
             if len(daum) == 0:
                 break
             curpage += 1
         else:
-            print(f"quotes permission denied in page {curpage}")
+            # print(f"quotes permission denied in page {curpage}")
             return None
-    print(len(quote_list))
+    # print(len(quote_list))
     return quote_list
 
 
@@ -278,7 +281,7 @@ def get_satisfying_netizen_data(code):
             netiezen_age_50s_rate_raw) != 0 else None
         return [netizen_male_rate, netizen_female_rate, netiezen_age_10s_rate, netiezen_age_20s_rate, netiezen_age_30s_rate, netiezen_age_40s_rate, netiezen_age_50s_rate]
     else:
-        print(f"satisfying netizen data permission denied on url : {url}")
+        # print(f"satisfying netizen data permission denied on url : {url}")
         return None
 
 
@@ -318,7 +321,7 @@ def get_satisfying_viewer_data(code):
             watcher_age_50s_rate_raw) != 0 else None
         return [watcher_male_rate, watcher_female_rate, watcher_age_10s_rate, watcher_age_20s_rate, watcher_age_30s_rate, watcher_age_40s_rate, watcher_age_50s_rate]
     else:
-        print(f"satisfying viewer data permission denied on url : {url}")
+        # print(f"satisfying viewer data permission denied on url : {url}")
         return None
 
 
@@ -336,16 +339,16 @@ def get_enjoy_point_data(code):
         for netizen_point_raw in netizen_point_raw_list:
             ll.append({netizen_point_raw.select("strong")[
                       0].text: netizen_point_raw.select("span.grp_score")[0].text})
-        # print(ll)
+        # # print(ll)
         # 관람객 관람 포인트
         ll2 = [VIEWER]
         for watcher_point_raw in watcher_point_raw_list:
             ll2.append({watcher_point_raw.select("strong")[
                        0].text: watcher_point_raw.select("span.grp_score")[0].text})
-        # print(ll2)
+        # # print(ll2)
         return ll.extend(ll2)  # 두 배열 합쳐서...
     else:
-        print(f"enjoy point data permission denied on url : {url}")
+        # print(f"enjoy point data permission denied on url : {url}")
         return None
 
 
@@ -396,7 +399,7 @@ def get_score_data(code):
 
         return score_list
     else:
-        print("rate permission denied")
+        # # print("rate permission denied")
         return None
 
 
@@ -424,9 +427,9 @@ def get_comment_data(code):
             critic_rate = el.select(
                 "div.re_score_grp > div.reporter_score > div.star_score > em")[0].text
             critic_content = el.select("p.tx_report")[0].text
-            # print(critic_name,critic_code,critic_title, critic_rate)
-            # print(critic_content)
-            # print("===================")
+            # # print(critic_name,critic_code,critic_title, critic_rate)
+            # # print(critic_content)
+            # # print("===================")
             rate_list.append([CRITIC, critic_rate, critic_title, critic_name])
         for el in critic_2_detail_raw:
             critic_name = el.select("div.score_reple > dl > dd")[
@@ -435,23 +438,23 @@ def get_comment_data(code):
             critic_rate = el.select("div.star_score > em")[0].text
             rate_list.append([CRITIC, critic_rate, critic_title, critic_name])
 
-            # print(critic_name,critic_title, critic_rate)
+            # # print(critic_name,critic_title, critic_rate)
 
         # 네티즌. 관람객 평점
         iframe_url_raw = soup.select("#pointAfterListIframe")
-        # print(f'https://movie.naver.com{iframe_url_raw[0]["src"]}')
+        # # print(f'https://movie.naver.com{iframe_url_raw[0]["src"]}')
         curpage = 1
         if len(iframe_url_raw) > 0:
             while True:
                 iframe_url = f'https://movie.naver.com{iframe_url_raw[0]["src"]}&page={curpage}'
-                # print(iframe_url)
+                # # print(iframe_url)
                 iframe_response = requests.get(iframe_url)
                 if iframe_response.status_code == 200:
                     soup = BeautifulSoup(iframe_response.text, "lxml")
                     daum = soup.select(f"#pagerTagAnchor{curpage+1} > em")
                     major_watcher_review_list_raw = soup.select(
                         "body > div > div > div.score_result > ul > li")
-                    # print(len(major_watcher_review_list_raw))
+                    # # print(len(major_watcher_review_list_raw))
                     for review in major_watcher_review_list_raw:
                         score_raw = review.select("div.star_score > em")
                         isWatcher_raw = review.select(
@@ -480,13 +483,13 @@ def get_comment_data(code):
                             [VIEWER if isWatcher else NETIZEN, score, review_content, reviewer])
                         if len(rate_list) >=100:
                             return rate_list
-                        # print(f"평점 : {score} {'관람객' if isWatcher else '안본사람'} {review_content} \n by {reviewer}\n================")
+                        # # print(f"평점 : {score} {'관람객' if isWatcher else '안본사람'} {review_content} \n by {reviewer}\n================")
                     if len(daum) == 0:
                         break
                     curpage += 1
                 else:
                     print("iframe permission denied")
-            print(len(rate_list))
+            # print(len(rate_list))
             return rate_list
         return None
 
@@ -496,19 +499,19 @@ def get_data_from_review_url(code):
     review_data_list = []
     curpage = 1
     while True:
-        # print(f"request on page={curpage}")
+        # # print(f"request on page={curpage}")
         response = requests.get(f"{url}&page={curpage}")
-        # print(f"request to url {url}&page={curpage}")
+        # # print(f"request to url {url}&page={curpage}")
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "lxml")
             daum = soup.select(f"#pagerTagAnchor{curpage+1} > em")
             # 한 페이지 내에서 해야할 일
             review_list = soup.select("#reviewTab > div > div > ul > li")
-            # print(review_list)
+            # # print(review_list)
             for review in review_list:
                 reviewer_code = review.select("a")[0]["onclick"].split(
                     "showReviewDetail(")[1][:-1]
-                # print(reviewer_code, code)
+                # # print(reviewer_code, code)
                 response2 = requests.get(
                     f"https://movie.naver.com/movie/bi/mi/reviewread.naver?nid={reviewer_code}&code={code}&order=#tab")
                 if response2.status_code == 200:
@@ -528,7 +531,7 @@ def get_data_from_review_url(code):
                         "#content > div.article > div.obj_section.noline.center_obj > div.review > div.user_tx_area")
                     review_comment_raw = soup2.select(
                         "#cbox_module> div > div:nth-child(3) > ul > li")
-                    print(review_comment_raw)
+                    # print(review_comment_raw)
 
                     # 리뷰 제목
                     review_title = review_title_raw[0].text if len(
@@ -553,13 +556,13 @@ def get_data_from_review_url(code):
                     review_content = review_content_raw
                     # 리뷰 댓글 -> 안불러와짐!
                     review_comment_list = []
-                    for comment in review_comment_raw:
-                        print(comment.select(
-                            "div>div>div.u_cbox_text_wrap>span").text)
-                        # review_comment_list.append()
+                    # for comment in review_comment_raw:
+                    #     # print(comment.select(
+                    #         "div>div>div.u_cbox_text_wrap>span").text)
+                    #     # review_comment_list.append()
                     review_data_list.append([review_title, review_score, review_date,
                                             review_writer, hits, recommend, review_content, review_comment_list])
-                    # print(review_content_raw)
+                    # # print(review_content_raw)
                 else:
                     print(
                         f"reviews permission denied on url https://movie.naver.com/movie/bi/mi/reviewread.naver?nid={reviewer_code}&code={code}&order=#tab")
@@ -568,14 +571,14 @@ def get_data_from_review_url(code):
             curpage += 1
 
         else:
-            print(f"reviews permission denied in page {curpage}")
+            # print(f"reviews permission denied in page {curpage}")
             return None
         return review_data_list
 
 def insertTitle(title, conn, cur):
     sql = """insert into movie (title) 
         values (%s);"""
-    # print(title)
+    # # print(title)
     cur.execute(sql, title)
     conn.commit()
     cur.close()
@@ -592,5 +595,5 @@ if __name__ == "__main__":
     url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     # [conn,cur] = open_db()
     # get_data_from_review_url(code_test)
-    # print(get_photo_data(code))
-    print(get_comment_data(code))
+    # # print(get_photo_data(code))
+    # print(get_score_data(code))

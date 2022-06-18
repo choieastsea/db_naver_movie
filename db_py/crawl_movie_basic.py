@@ -19,14 +19,14 @@ def get_basic(code):
     element = soup.select('#content > div.article > div.section_group.section_group_frst > div:nth-child(1) > div > div.story_area > p')
     if(len(element)!=0):
         story += element[0].text
-    print(story)
+    # print(story)
     
     # 제작노트
     makingnote=""
     element = soup.select('#makingnotePhase')
     if(len(element)!=0):
         makingnote +=element[0].text
-    print(makingnote)
+    # print(makingnote)
 
     return [story,makingnote]
 
@@ -40,7 +40,7 @@ def get_actor(code) :
     subactor_arr = []
     #배우
     element = soup.select('#content > div.article > div.section_group.section_group_frst > div.obj_section.noline > div > div.lst_people_area.height100 > ul > li')
-    # print(element)
+    # # print(element)
     for act in element:
         actor = []
 
@@ -51,7 +51,7 @@ def get_actor(code) :
         else:
             thumbnail = None
         actor.append(thumbnail)
-        print(thumbnail)
+        # print(thumbnail)
 
         #배우 code
         ele_infourl = act.select('.p_thumb > a')
@@ -60,7 +60,7 @@ def get_actor(code) :
         else:
             infourl = None
         actor.append(infourl)
-        print(infourl)
+        # print(infourl)
 
         # 배우 이름
         ele_name = act.select('.p_info > a')
@@ -70,7 +70,7 @@ def get_actor(code) :
             name = None
         actor.append(name)
 
-        print(name)
+        # print(name)
 
         #배우 영어이름
         ele_ename = act.select('.p_info > em.e_name')
@@ -80,7 +80,7 @@ def get_actor(code) :
             ename = None
         actor.append(ename)
         
-        print(ename)
+        # print(ename)
 
         #배우 조연/주연
         ele_part = act.select('.p_info > .part em.p_part')
@@ -90,7 +90,7 @@ def get_actor(code) :
             part = None
         actor.append(part)
 
-        print(part)
+        # print(part)
 
         #배역 (...역)
         ele_part2 = act.select('.p_info > .part p.pe_cmt > span')
@@ -100,7 +100,7 @@ def get_actor(code) :
             part2 = None
         actor.append(part2)
 
-        print(part2)
+        # print(part2)
         career_arr =[]
         ele_movie = act.select('.mv_product > li > a')
         for i in range(len(ele_movie)):
@@ -109,7 +109,7 @@ def get_actor(code) :
                 movie = ele_movie[i].text
             else:
                 movie = None
-            print(movie)
+            # print(movie)
 
             #출연 영화 개붕년도
             ele_year = act.select('.mv_product > li > span')
@@ -117,7 +117,7 @@ def get_actor(code) :
                 year = ele_year[i].text
             else:
                 year = None
-            print(year)
+            # print(year)
 
             career = [movie,year]
             career_arr.append(career)
@@ -139,8 +139,8 @@ def get_actor(code) :
         else:
             e_namea = None
             e_namecode = None
-        print(e_namea)
-        print(e_namecode)
+        # print(e_namea)
+        # print(e_namecode)
         subactor.append(e_namea)
         subactor.append(e_namecode)
 
@@ -151,7 +151,7 @@ def get_actor(code) :
             e_nameb = em_name[0].text
         else:
             e_nameb = None
-        print(e_nameb)
+        # print(e_nameb)
         subactor.append(e_nameb)
 
         subactor_arr.append(subactor)
@@ -175,7 +175,7 @@ def get_director(code):
             img = thumbnail[0]['src']
         else:
             img = None
-        print(img)
+        # print(img)
         director.append(img)
 
         #감독정보 code
@@ -185,7 +185,7 @@ def get_director(code):
             info_url = url[0]['href'].split('code=')[1]
         else:
             info_url = None
-        print(info_url)
+        # print(info_url)
         director.append(info_url)
 
         #감독 이름
@@ -194,14 +194,14 @@ def get_director(code):
             name=dir_name[0].text
         else:
             name = None
-        print(name)
+        # print(name)
         director.append(name)
         #감독 영어이름
         dir_ename = pr.select('em.e_name')
         ename=dir_ename[0].text
         if len(ename)==0 :
             ename = None
-        print(ename)
+        # print(ename)
         director.append(ename)
         #다른작품
         other_list = pr.select('.other_mv_group ul.other_list li')
@@ -209,7 +209,7 @@ def get_director(code):
             #영화 이름
             o_title = other.select('.other_mv > a')
             title = o_title[0].text
-            print(title)
+            # print(title)
 
             #역할
             arr = []
@@ -217,7 +217,7 @@ def get_director(code):
             does = o_does[0].text
             does=does.replace('\t','').replace('\r','').replace('\n','')
             arr = does.split(",")
-            print(arr)
+            # print(arr)
 
             #제작년도
             o_year = other.select('.made_since > dt')
@@ -225,7 +225,7 @@ def get_director(code):
                 year = o_year[0].text
             else:
                 year = None
-            print(year)
+            # print(year)
 
             #제작국가
             o_country = other.select('.made_since > dd')
@@ -233,7 +233,7 @@ def get_director(code):
                 country = o_country[0].text.replace('\t','').replace('\r','').replace('\n','')
             else:
                 country = None
-            print(country)
+            # print(country)
 
         director_arr.append(director)
     return director_arr
@@ -256,7 +256,7 @@ def get_producer(code):
                 str_url = url[0]['href'].split('code=')[1]
             else:
                 str_url = None
-            print(str_url)
+            # print(str_url)
             producer_staff.append(str_url)
             
 
@@ -266,8 +266,8 @@ def get_producer(code):
             part_s = ename[1].text
             if(len(ename_s)==0):
                 ename_s=None
-            print(ename_s)
-            print(part_s)
+            # print(ename_s)
+            # print(part_s)
             producer_staff.append(ename_s)
             producer_staff.append(part_s)
 
@@ -281,7 +281,7 @@ def get_producer(code):
                 name_s = name[0].text
             else:
                 name_s = sp.text.replace(tmp,'').replace(part_s,'').replace('\t','').replace('\r','').replace('\n','')
-            print(name_s)
+            # # print(name_s)
             producer_staff.append(name_s)
             staff_arr.append(producer_staff)
         return staff_arr
@@ -293,7 +293,7 @@ def get_company(code):
     soup = BeautifulSoup(resp.text,"lxml") 
 
     company = soup.select('#content > div.article > div:nth-child(7) > div:nth-child(2) > div > dl')
-    # print(company)
+    # # print(company)
     com_arr=[]
     for com in company:
         a = com.select('dd')
@@ -303,8 +303,8 @@ def get_company(code):
         for i in range(len(a)) :
             company_role =b[i].text.strip()
             company_name = a[i].text.strip()
-            print(company_role)
-            print(company_name)
+            # print(company_role)
+            # print(company_name)
             com1.append(company_role)
             com1.append(company_name)
         com_arr.append(com1)
@@ -320,7 +320,7 @@ def get_relate(code):
     relate_movie = soup.select('#content > div.article > div:nth-child(7) > div > div > ul > li > h5 > a')
     for relate in relate_movie:
         ret.append(relate['href'].split('code=')[1])
-    print(ret)
+    # print(ret)
     return ret
 
 @dataclass
