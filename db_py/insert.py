@@ -6,7 +6,6 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from init_db import open_db
 from enum import Enum
-
 from enter import get_url
 from crawl_movie_basic import get_basic
 from crawl_movie_basic import get_actor
@@ -75,7 +74,7 @@ def insert_movie():
 
         # 영화 기본 정보 배열
         movie=[movie_code,movie_data[9], movie_data[10], story, makingnote ,movie_data[12], movie_data[2], movie_data[3] ,movie_data[8], movie_data[1], movie_data[4], movie_data[7],movie_data[11],movie_data[6]]
-
+        commitq(SQL.movie, movie)
         [actor,subactor] = get_actor(movie_code)
         director_arr = get_director(movie_code)
         producer_arr = get_producer(movie_code)
@@ -88,13 +87,15 @@ def insert_movie():
                 if act[1]==None:
                     subpeople = [mpeople_index,movie_code ,act[2],  act[5]]
                     mpeople_index +=1
-                    # commit(SQL.mpeople_sub,subpeople)
+                    commitq(SQL.mpeople_sub,subpeople)
                 else:
                     mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
+                    commitq(SQL.people,mpeople)
 
                 movie_appearance = [int(act[1]),movie_code,act[5]]
-
+                commitq(SQL.movie_appearance,movie_appearance)
                 casting = [int(act[1]),movie_code,act[4]]
+                commitq(SQL.casting,casting)
 
         # 영화인 - 서브배우
         if subactor!=None:
@@ -103,12 +104,18 @@ def insert_movie():
                 if act[1]==None:
                     subpeople = [mpeople_index,movie_code ,act[0],  act[2]]
                     mpeople_index +=1
+                    commitq(SQL.mpeople_sub,subpeople)
                 else:
                     mpeople = [int(act[1]),None ,act[0],  None]
+                    commitq(SQL.people,mpeople)
+
 
                 movie_appearance = [int(act[1]),movie_code,act[2]]
+                commitq(SQL.movie_appearance,movie_appearance)
 
                 casting = [int(act[1]),movie_code,None]
+                commitq(SQL.casting,casting)
+
         
         # 영화인 - 감독
         if director_arr!=None:
@@ -117,14 +124,22 @@ def insert_movie():
                 if act[1]==None:
                     subpeople = [mpeople_index,movie_code ,act[2],  "감독"]
                     mpeople_index +=1
+                    commitq(SQL.mpeople_sub,subpeople)
+
                 else:
                     mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
+                    commitq(SQL.people,mpeople)
+
 
                 movie_appearance = [int(act[1]),movie_code,None]
+                commitq(SQL.movie_appearance,movie_appearance)
+
                 # 명대사 quotes get 함수 & for문
                 # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
 
                 casting = [int(act[1]),movie_code,"감독"]
+                commitq(SQL.casting,casting)
+
         
         # 영화인 - 제작진
         if producer_arr!=None:
@@ -135,12 +150,19 @@ def insert_movie():
                         act[3]=act[1]
                     subpeople = [mpeople_index,movie_code ,act[3],  act[2]]
                     mpeople_index +=1
+                    commitq(SQL.mpeople_sub,subpeople)
+
                 else:
                     mpeople = [int(act[0]),None ,act[3],  act[1]]
+                    commitq(SQL.people,mpeople)
+
 
                 movie_appearance = [int(act[0]),movie_code,None]
+                commitq(SQL.movie_appearance,movie_appearance)
 
                 casting = [int(act[0]),movie_code, act[2]]
+                commitq(SQL.casting,casting)
+
 
         # 명대사
         quotes_arr = get_quotes_data(movie_code)
@@ -149,18 +171,24 @@ def insert_movie():
                 # quote[1] : people code  quote[2] = comment , quote[5]: 추천수 , quote[6] : user id
         
                 quotes = [int(quote[1]),movie_code, quote[2],int(quote[5]),quote[6]]
+                commitq(SQL.quotes,quotes)
+
         
         # 연관영화
-        relates = get_relate(movie_code)
-        if relates !=None:
-            for relate_movie in relates:
-                insert_value = [movie_code, int(relate_movie)]
+        # relates = get_relate(movie_code)
+        # if relates !=None:
+        #     for relate_movie in relates:
+        #         insert_value = [movie_code, int(relate_movie)]
+        #         commitq(SQL.relate_movie,insert_value)
+
 
         # 한줄평
         comments = get_comment_data(movie_code)
         if comments !=None:
             for comment in comments:
                 insert_value = [movie_code, int(comment[1]),comment[2],comment[3]]
+                commitq(SQL.comment,insert_value)
+
 
         # 리뷰
         review_data_list = get_data_from_review_url(movie_code)
@@ -171,6 +199,8 @@ def insert_movie():
                 if review[5]==None: review[5]=0
                 
                 insert_value = [movie_code, review[0],int(review[4]),int(review[5]),review[2],review[3],review[6],int(review[1])]
+                commitq(SQL.review,insert_value)
+
 
         # 평점 (score)
         scores = get_score_data(movie_code)
@@ -178,128 +208,156 @@ def insert_movie():
             for score1 in scores : 
                 if score1[1] == None:
                     insert_value = [movie_code, score1[2], None, int(score1[3])]
+                    commitq(SQL.score,insert_value)
+
 
                 elif score1[3] == None:
                     insert_value = [movie_code, score1[2],  int(score1[1]), None]
+                    commitq(SQL.score,insert_value)
+
                 
                 elif score1[3] == None and score1[1] == None:
                     insert_value = [movie_code, score1[2], None, None]
+                    commitq(SQL.score,insert_value)
+
 
         # 장르
         genres = movie_data[5]
         if genres !=None:
             for genre in genres:
                 insert_value = [genre,movie_code]
+                commitq(SQL.genre,insert_value)
+
 
         # 회사
         companies = get_company(movie_code)
         if companies !=None:
             for company in companies:
                 insert_value = [movie_code, company[1],company[0]]
+                commitq(SQL.company,insert_value)
+
 
         # 사진
         photoes  = get_photo_data(movie_code)
         if photoes !=None:
             for photo in photoes:
                 insert_value = [movie_code, photo[1]]
+                commitq(SQL.photo,insert_value)
+
         # 동영상
         videos = get_video_data(movie_code)
         if videos !=None:
             for video in videos:
                 insert_value = [movie_code, video[3], video[2],video[1]]
+                commitq(SQL.video,insert_value)
+
 
         # enjoy_point
         eps = get_enjoy_point_data(movie_code)
         if eps !=None:
             for ep in eps:
                 insert_value = [movie_code,ep[1],ep[2],ep[3],ep[4],ep[5],int(ep[0])]
+                commitq(SQL.enjoy_point,insert_value)
+
 
         # satifying_netizen
         sns = get_satisfying_netizen_data(movie_code)
         if sns!=None:
             insert_value = [movie_code, sns[0],sns[1],sns[2],sns[3],sns[4],sns[5],sns[6]]
+            commitq(SQL.satisfying_netizen,insert_value)
+
         else:
             insert_value = [movie_code, None,None,None,None,None,None,None]
+            commitq(SQL.satisfying_netizen,insert_value)
+
 
         # satifying_viewer
         svs = get_satisfying_viewer_data(movie_code)
         if svs!=None:
             insert_value = [movie_code, svs[0],svs[1],svs[2],svs[3],svs[4],svs[5],svs[6]]
+            commitq(SQL.satisfying_viewer,insert_value)
+
         else:
             insert_value = [movie_code, None,None,None,None,None,None,None]
+            commitq(SQL.satisfying_viewer,insert_value)
+
 
         # viewing trend
         vts = get_viewing_trend_data(movie_code)
         if vts != None:
             insert_value = [movie_code, vts[0],vts[1],vts[2],vts[3],vts[4]]
+            commitq(SQL.viewing_trend,insert_value)
+
         else:
             insert_value = [movie_code, None,None,None,None,None]
+            commitq(SQL.viewing_trend,insert_value)
+
 
 
 
 
 # flag  1: movie 2:people 3:movie_appearance 4:quotes 5:casting 6:mpeople_sub 7:relate_movie 8:comment 9:review 10:score 11:review_comment 12:genre 13:country 14:company 15:photo 16:video 17:enjoy_point 18:satisfying_netizen 19:viewing_trend 20:satisfying_viewer
-def commit(flag, a):
+def commitq(flag, a):
     [conn,curs] = open_db()
     if flag== SQL.movie:
-         sql = """insert into movie (movie_code, film_rate_kor, film_rate_foreign , story, makingnote , aka , title_kor , title_foreign , release_date, current_opening, img_url , running,time, cumulate_audience,country) 
+         sql = """insert IGNORE into movie (movie_code, film_rate_kor, film_rate_foreign , story, makingnote , aka , title_kor , title_foreign , release_date, current_opening, img_url , running_time, cumulate_audience,country) 
         values (%s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"""
-    elif flag== 2 :
-         sql = """insert into peoole (people_code, thumbnail, name , eng_name) 
+    elif flag== SQL.people :
+         sql = """insert IGNORE into people (people_code, thumbnail, name , eng_name) 
         values (%s, %s, %s,%s);"""
-    elif flag== 3 :
-        sql = """insert into movie_appearance (people_code, movie_code, role) 
+    elif flag== SQL.movie_appearance :
+        sql = """insert IGNORE into movie_appearance (people_code, movie_code, role) 
         values (%s, %s, %s);"""
-    elif flag== 4 :
-        sql = """insert into quotes (people_code, movie_code, quotes , good, userid) 
+    elif flag== SQL.quotes :
+        sql = """insert IGNORE into quotes (people_code, movie_code, quotes , good, userid) 
         values (%s, %s, %s,%s,%s);"""
-    elif flag== 5 :
-        sql = """insert into casting (peoole_code, movie_code, casting_name) 
+    elif flag== SQL.casting :
+        sql = """insert IGNORE into casting (people_code, movie_code, casting_name) 
         values (%s, %s, %s);"""
-    elif flag== 6 :
-        sql = """insert into mpeople_sub (movie_code, name, casting) 
+    elif flag== SQL.mpeople_sub :
+        sql = """insert IGNORE into mpeople_sub (movie_code, name, casting) 
         values (%s, %s, %s);"""
-    elif flag== 7 :
-        sql = """insert into relate_movie (movie_code, movie_code1) 
+    elif flag== SQL.relate_movie :
+        sql = """insert IGNORE into relate_movie (movie_code, movie_code1) 
         values (%s, %s);"""
-    elif flag== 8 :
-        sql = """insert into comment (movie_code, score, comment , type) 
+    elif flag== SQL.comment :
+        sql = """insert IGNORE into comment (movie_code, score, comment , type) 
         values (%s, %s, %s,%s);"""
-    elif flag== 9 :
-        sql = """insert into review (review_id, movie_code, title , view_num, good , date , writer , contents ) 
+    elif flag== SQL.review :
+        sql = """insert IGNORE into review (review_id, movie_code, title , view_num, good , date , writer , contents ) 
         values (%s, %s, %s,%s,%s,%s,%s,%s);"""
-    elif flag== 10 :
-        sql = """insert into score (movie_code, score, type , story, comment_number) 
-        values (%s, %s, %s,%s,%s);"""
-    elif flag== 12 :
-        sql = """insert into genre (genre_name, movie_code) 
-        values (%s, %s);"""
-    elif flag== 14 :
-        sql = """insert into company (movie_code, name, role) 
-        values (%s, %s, %s);"""
-    elif flag== 15 :
-        sql = """insert into photo (movie_code, url) 
-        values (%s, %s);"""
-    elif flag== 16 :
-        sql = """insert into video (movie_code, video_url, thumbnail_url , title) 
+    elif flag== SQL.score :
+        sql = """insert IGNORE into score (movie_code, score, type , comment_number) 
         values (%s, %s, %s,%s);"""
-    elif flag== 17 :
-        sql = """insert into enjoy_point (movie_code, production, acting , story, recording_beauty , ost,type ) 
+    elif flag== SQL.genre :
+        sql = """insert IGNORE into genre (genre_name, movie_code) 
+        values (%s, %s);"""
+    elif flag== SQL.company :
+        sql = """insert IGNORE into company (movie_code, name, role) 
+        values (%s, %s, %s);"""
+    elif flag== SQL.photo :
+        sql = """insert IGNORE into photo (movie_code, url) 
+        values (%s, %s);"""
+    elif flag== SQL.video :
+        sql = """insert IGNORE into video (movie_code, video_url, thumbnail_url , title) 
+        values (%s, %s, %s,%s);"""
+    elif flag== SQL.enjoy_point :
+        sql = """insert IGNORE into enjoy_point (movie_code, production, acting , story, recording_beauty , ost,type ) 
         values (%s, %s, %s,%s,%s,%s,%s);"""
-    elif flag== 18 :
-        sql = """insert into satisfying_netizen (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
+    elif flag== SQL.satisfying_netizen :
+        sql = """insert IGNORE into satisfying_netizen (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
         values (%s, %s, %s,%s,%s,%s,%s,%s);"""
-    elif flag== 19 :
-        sql = """insert into viewing_trend (movie_code, tenth , twentieth , thirtieth , fortieth , fiftieth) 
+    elif flag== SQL.viewing_trend :
+        sql = """insert IGNORE into viewing_trend (movie_code, tenth , twentieth , thirtieth , fortieth , fiftieth) 
         values ( %s,%s,%s,%s,%s,%s);"""
-    elif flag== 20 :
-        sql = """insert into satisfying_viewer (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
+    elif flag== SQL.satisfying_viewer :
+        sql = """insert IGNORE into satisfying_viewer (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
         values (%s, %s, %s,%s,%s,%s,%s,%s);"""
     else : 
         print("invalid sql")
 
     # print(a)
-    curs.executemany(sql, a)
+    curs.execute(sql, a)
     
     conn.commit()
     curs.close()
