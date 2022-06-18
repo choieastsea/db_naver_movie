@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import BasicMovie from "../component/BasicMovie";
 import { NotFound } from "./NotFound";
+import { CircularProgress } from "@mui/material";
 export const SearchResultPage = () => {
   const [searchParams] = useSearchParams();
   const userInput = searchParams.get("userInput");
   const [resultData, setResultData] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [dataList, setDataList] = useState([]);
 
   useEffect(() => {
@@ -17,13 +17,22 @@ export const SearchResultPage = () => {
       console.log(res);
       setResultData(res);
       setDataList(res.data);
-      setIsLoading(false);
     }
     fetchMovie();
   }, [userInput]);
-  return resultData.result === "success" ? (
-    dataList.map((e) => <BasicMovie movieData={e} />)
+  return resultData?.result === "success" ? (
+    <div>
+      {dataList.length !== 0 ? (
+        <ul>
+          {dataList.map((e) => (
+            <div></div>
+          ))}
+        </ul>
+      ) : (
+        <p>"{userInput}"으로 시작하는 영화 또는 인물정보가 없습니다</p>
+      )}
+    </div>
   ) : (
-    <NotFound />
+    <CircularProgress />
   );
 };

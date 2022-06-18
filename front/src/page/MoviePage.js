@@ -19,20 +19,7 @@ export const MoviePage = () => {
   /* control tab bar */
   const handleChange = (e, newValue) => {
     setValue(newValue);
-    if (newValue === 1) {
-    } else if (newValue === 5) {
-      //set reviewData
-      if (!reviewData?.length) {
-        const code = searchParams.get("code");
-        async function fetchReviewData() {
-          const data = await fetch(`api/movie/review?code=${code}`);
-          const res = await data.json();
-          console.log(res);
-          setReviewData(res);
-        }
-        fetchReviewData();
-      }
-    }
+    
   };
 
   useEffect(() => {
@@ -90,7 +77,7 @@ export const MoviePage = () => {
             </TabPanel>
             <TabPanel value={value} index={5}>
               {/* 리뷰 */}
-              <Review reviewData={reviewData} />
+              <Review movie_code={code} />
             </TabPanel>
             <TabPanel value={value} index={6}>
               {/* 명대사/관련영화 */}

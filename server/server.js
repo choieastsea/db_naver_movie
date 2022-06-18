@@ -74,9 +74,12 @@ app.get("/api/movie/basic", async (req, res) => {
 });
 app.get(`/api/movie/review`, async (req, res) => {
   const code = req.query.code;
+  const page = req.query.page;
   try {
     const [row] = await pool.query(
-      `select * from review where movie_movie_code=${code}`
+      `select * from review where movie_movie_code=${code} and review_id > ${
+        (page - 1) * 10
+      } limit 10;`
     );
     const review_list = [];
     for (let i = 0; i < row.length; i++) {
@@ -93,36 +96,9 @@ app.get(`/api/movie/review`, async (req, res) => {
       });
       console.log(review_list);
     }
-    res.json({ review_list, length: row.length });
+    res.json({ result: "success", review_list, length: row.length });
   } catch (e) {
     console.log(e);
-    res.json({ result: "fail" });
-  }
-});
-//in main pages...
-app.get("/api/getMovies", async (req, res) => {
-  try {
-    const [row] = await pool.query("select * from movie");
-    let arr = [];
-    console.log(`data length : ${row.length}`);
-    for (var i = 0; i < row.length; i++) {
-      // console.log(`${row[i].title}`);
-      arr.push({
-        code: row[i].code,
-        title_kor: row[i].title_kor,
-        title_eng: row[i].title_eng,
-        making_note: row[i].makingnote,
-        summary: row[i].summary,
-        aka: row[i].aka,
-        country: row[i].country,
-        release_date: row[i].releasedate,
-        screening: row[i].screening,
-      });
-    }
-    console.log(arr);
-    res.json(arr);
-  } catch (e) {
-    console.error(e);
     res.json({ result: "fail" });
   }
 });
@@ -131,10 +107,13 @@ app.get("/api/start", async (req, res) => {
   console.log(`${userInput}`);
   try {
     const [row1] = await pool.query(
-      `select title_kor,movie_code,release_date from movie where title_kor like "${userInput}%";`
+      `select title_kor,movie_code,release_date from movie where title_kor like "${userInput}%" limit 5;`
+    );
+    const [row2] = await pool.query(
+      `select * from mpeoole where name like "${userInput}%" limit 5;`
     );
     console.log(row1);
-    res.json(row1);
+    res.json(row1.concat(row2));
     // const [row2] = await pool.query("select * from movie");
   } catch (e) {
     console.log(e);
@@ -146,14 +125,35 @@ app.get("/api/search", async (req, res) => {
   console.log(`/api/search?userInput=${userInput}`);
   try {
     const [row] = await pool.query(
-      `select * from movie where title_kor like "%${userInput}%"`
+      `select * from movie where title_kor like "${userInput}%"`
+    );
+    const [prow] = await pool.query(
+      `select * from mpeople where name like "${userInput}%";`
     );
     // console.log(row);
     console.log({ result: "success", data: row });
-    res.json({ result: "success", data: row });
+    res.json({ result: "success", data: row.concat(prow) });
   } catch (e) {
     console.log(e);
-    res.json({ result: "fail" });
+    res.json({ result: "fail", data: e });
+  }
+});
+app.get("/api/person/filmography", async (req, res) => {
+  const code = req.query.code;
+  try {
+    const [actor_name] = await pool.query(
+      `select name from mpeoole where mpeople_code=${code};`
+    );
+    const [row] =
+      await pool.query(`select c.casting_name, m.title_kor, m.movie_code, m.release_date, m.img_url
+    from mpeoole p, casting c, movie m 
+    where p.mpeople_code = c.movie_appearance_mpeoole_mpeoole_id 
+    and m.movie_code = c.movie_appearance_movie_movie_code
+    and p.mpeople_code = "${code}";`);
+    res.json({ result: "success", name: actor_name[0].name, data: row });
+  } catch (e) {
+    console.log(e);
+    res.json({ result: "fail", data: e });
   }
 });
 app.listen(3001, () => {

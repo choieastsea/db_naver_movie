@@ -1,7 +1,9 @@
 .App {
   text-align: center;
 }
-
+ul {
+  list-style: none;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -14,7 +16,7 @@
   width: 1000px;
   margin: 0 auto;
 }
-nav>ul{
+nav > ul {
   /* for pagination */
   justify-content: center;
 }

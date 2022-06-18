@@ -45,7 +45,7 @@ export const Search = () => {
     <div>
       <TextField
         id="outlined-basic"
-        label="영화 검색"
+        label="영화/영화인 검색"
         variant="outlined"
         size="small"
         style={{ width: "300px" }}
@@ -80,13 +80,21 @@ const AutoFillList = ({ list }) => {
       }}
     >
       <List>
-        {list.map((e) => (
-          <li key={e.movie_code}>
-            <ListItemButton href={`movie?code=${e.movie_code}`}>
-              {e.title_kor} ({e.release_date?.split(".")[0]})
-            </ListItemButton>
-          </li>
-        ))}
+        {list.map((e) =>
+          e.movie_code ? (
+            <li key={e.movie_code}>
+              <ListItemButton href={`movie?code=${e.movie_code}`}>
+                {e.title_kor} ({e.release_date?.split(".")[0]})
+              </ListItemButton>
+            </li>
+          ) : (
+            <li key={e.mpeople_code}>
+              <ListItemButton href={`person?code=${e.mpeople_code}`}>
+                {e.name}
+              </ListItemButton>
+            </li>
+          )
+        )}
       </List>
     </div>
   );

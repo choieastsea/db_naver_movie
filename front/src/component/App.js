@@ -1,6 +1,4 @@
 import "./App.css";
-import { Movie } from "./Movie";
-import { Search } from "./Search";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Main } from "../page/MainPage";
 import { MoviePage } from "../page/MoviePage";
@@ -8,6 +6,7 @@ import { PersonPage } from "../page/PersonPage";
 import { NotFound } from "../page/NotFound";
 import { SearchResultPage } from "../page/SearchResultPage";
 import { Header } from "./Header";
+import { ReviewPage } from "../page/ReviewPage";
 function App() {
   return (
     <BrowserRouter>
@@ -16,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/search" element={<SearchResultPage />} />
+          <Route path="/movie/review" element={<ReviewPage />} />
           <Route path="/movie" element={<MoviePage />} />
           <Route path="/person" element={<PersonPage />} />
           <Route path="/*" element={<NotFound />} />
