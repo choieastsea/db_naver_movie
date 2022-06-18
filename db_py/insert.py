@@ -3,6 +3,7 @@ import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 from init_db import open_db
+from enter import get_url
 from crawl_movie_basic import get_basic
 from crawl_movie_basic import get_actor
 from crawl_movie_basic import get_director
@@ -40,41 +41,115 @@ def insert_movie():
     # todo. sql에서 autoincrement 빼야될 애들 빼줘야됨
 
     # ####################################################################################################################################################################################
+    
+    addr = get_url() # addr은 영화 코드 배열
+    mpeople_index=int(147483647)
+    for movie_code in addr:
+        [story,makingnote] = get_basic(movie_code)
 
+
+        # movie =  [code,  "해외영화등급", "스토리 ~~~~", "메이킹 노트","A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부" ]
     # 영화루프 진입했다고 가정.
-    movie_code = 1111
-    movie=[movie_code,"국내영화등급", "해외영화등급", "스토리 ~~~~", "메이킹 노트","A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부" ]
+    
 
-    # 서브 영화인
-    mpeople_sub = [movie_code,"보조영화인이름","역할 - 감독/제작진 등"]
+        [story,makingnote] = get_basic(movie_code)
+        movie=[movie_code,"국내영화등급", "해외영화등급", story, makingnote ,"A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부" ]
 
-    # 영화인
-    mpeople_id = 1  # 0부터 1씩 증가하는 영화인 id를 우리가 직접 넣어준다.
-    mpeople = [mpeople_id, "마동석", "코드30123"]
-    # 영화인 출연
-    movie_appearance_id = [movie_code, mpeople_id] # 얘로 appearance테이블 생성
-    # 영화인 - 출연 - 명대사 
-    quote = [movie_appearance_id[0],movie_appearance_id[1], "명대사 내용", 300]
-    # 영화인 - 출연 - 역할 
-    casting = [movie_appearance_id[0],movie_appearance_id[1], "배역 이름 ex) 감독 주연 기획 제작 조연 등등"]
+        [actor,subactor] = get_actor(movie_code)
+        [director_arr] = get_director(movie_code)
+        [producer_arr] = get_producer(movie_code)
+        #  영화인 - 배우
+        for act in actor : 
+            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연 act[5] : ...역
+            if act[1]==None:
+                mpeople = [mpeople_index,act[0] ,act[2],  act[3]]
+                mpeople_index +=1
+            else:
+                mpeople = [act[1],act[0] ,act[2],  act[3]]
+
+            movie_appearance = [act[1],movie_code,act[5]]
+            # 명대사 quotes get 함수 & for문
+            quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+
+            casting = [act[1],movie_code,"주연/ 조연"]
+
+        # 영화인 - 서브배우
+        for act in subactor : 
+            # act[0] :이름 act[1]:영화인code act[2]:...역
+            if act[1]==None:
+                mpeople = [mpeople_index,None ,act[0],  None]
+                mpeople_index +=1
+            else:
+                mpeople = [act[1],None ,act[0],  None]
+
+            movie_appearance = [act[1],movie_code,act[2]]
+            # 명대사 quotes get 함수 & for문
+            quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+
+            casting = [act[1],movie_code,"주연/ 조연"]
+        
+        # 영화인 - 감독
+        for act in director_arr : 
+            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연/감독 act[5] : ...역
+            if act[1]==None:
+                mpeople = [mpeople_index,act[0] ,act[2],  act[3]]
+                mpeople_index +=1
+            else:
+                mpeople = [act[1],act[0] ,act[2],  act[3]]
+
+            movie_appearance = [act[1],movie_code,None]
+            # 명대사 quotes get 함수 & for문
+            # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+
+            casting = [act[1],movie_code,"감독"]
+        
+        # 영화인 - 제작진
+        for act in producer_arr : 
+            #  act[0]:영화인code act[2] :주연/조연  act[3]:이름 act[1]: 영어이름
+            if act[0]==None:
+                mpeople = [mpeople_index,None ,act[3],  act[1]]
+                mpeople_index +=1
+            else:
+                mpeople = [act[0],None ,act[3],  act[1]]
+
+            movie_appearance = [act[0],movie_code,None]
+            # 명대사 quotes get 함수 & for문
+            # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+
+            casting = [act[0],movie_code, act[2]]
 
 
-    # 연관영화
-    relate_movie_code = 1112 # 연관영화의 코드를 크롤링한다.
-    relate_movie = [movie_code, relate_movie_code]
+# ##########################################################################################################################################
+    # mpeople_sub = [movie_code,"보조영화인이름","역할 - 감독/제작진 등"]
 
-    # 한줄평 [ autoincrement, moviecode, 평점, 코멘트내용,기자인지 관람객인지 네티즌인지, 작성시간, 추천, 비추천]
-    comment = [movie_code,5,"한줄평내용", "네티즌", "2021년12월23일 16시45분",300,28]
+    # # 영화인
+    # mpeople_code =213123
+    # # mpeople_id = 1  # 0부터 1씩 증가하는 영화인 id를 우리가 직접 넣어준다.
+    # mpeople = [mpeople_code,"tumbnail url" ,"마동석", "코드30123"]
+    # # 영화인 출연
+    # movie_appearance = [movie_code, mpeople_code , " ~~역 (role)"] # 얘로 appearance테이블 생성
+    # # 영화인 - 출연 - 명대사 
+    # quote = [mpeople_code,movie_code, "명대사 내용", 300] # 300은 추천수
+    # # 영화인 - 출연 - 역할 
+    # casting = [mpeople_code,movie_code, "배역 이름 ex) 감독 주연 기획 제작 조연 등등"]
 
-    # 평점
-    score = [movie_code, 9.4, "네티즌", 328]
 
-    # 리뷰
-    review_id = 1 # 0부터 1씩 증가하는 리뷰id를 우리가 직접 넣어준다. 
-    # 450 = 조회수
-    review = [review_id, movie_code, "리뷰 제목", 450 , 300 , 28 , "2022년06월10일", "작성자"]
-    # 리뷰의 댓글
-    review_comment = [review_id, movie_code, "작성자", 300 , 28, "답글내용", "2022년6월12일"]
+    # # 연관영화
+    # relate_movie_code = 1112 # 연관영화의 코드를 크롤링한다.
+    # relate_movie = [movie_code, relate_movie_code]
+
+    # # 한줄평 [ autoincrement, moviecode, 평점, 코멘트내용,기자인지 관람객인지 네티즌인지, 작성시간, 추천, 비추천]
+    # comment = [movie_code,5,"한줄평내용", "네티즌", "2021년12월23일 16시45분",300,28]
+
+    # # 평점
+    # score = [movie_code, 9.4, "네티즌", 328]
+
+    # # 리뷰
+    # review_id = 1 # 0부터 1씩 증가하는 리뷰id를 우리가 직접 넣어준다. 
+    # # 450 = 조회수
+    # review = [review_id, movie_code, "리뷰 제목", 450 , 300 , 28 , "2022년06월10일", "작성자"]
+    # # 리뷰의 댓글
+    # review_comment = [review_id, movie_code, "작성자", 300 , 28, "답글내용", "2022년6월12일"]
 
 
     

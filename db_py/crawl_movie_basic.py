@@ -5,8 +5,8 @@ import requests
 from bs4 import BeautifulSoup
 
 # 주요정보 탭
-def get_basic(basictab_url):
-    url="https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
+def get_basic(code):
+    url = 'https://movie.naver.com/movie/bi/mi/basic.naver?code='+str(code)
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
 
@@ -28,30 +28,45 @@ def get_basic(basictab_url):
     return [story,makingnote]
 
 # 배우
-def get_actor(actortab_url) :
-    url="https://movie.naver.com/movie/bi/mi/detail.naver?code=192608"
+def get_actor(code) :
+    url = 'https://movie.naver.com/movie/bi/mi/detail.naver?code='+str(code)
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
 
+    actor_arr = []
+    subactor_arr = []
     #배우
-    actor = []
-    
     element = soup.select('#content > div.article > div.section_group.section_group_frst > div.obj_section.noline > div > div.lst_people_area.height100 > ul > li')
     # print(element)
     for act in element:
+        actor = []
+
         #배우 사진
         ele_thumnail = act.select('.p_thumb > a > img')
-        thumbnail = ele_thumnail[0]['src']
+        if(len(ele_thumnail[0]['src'])>0):
+            thumbnail = ele_thumnail[0]['src']
+        else:
+            thumbnail = None
+        actor.append(thumbnail)
         print(thumbnail)
 
-        #배우 상세정보url
+        #배우 code
         ele_infourl = act.select('.p_thumb > a')
-        infourl = ele_infourl[0]['href']
+        if(len(ele_infourl[0].text)>0):
+            infourl = ele_infourl[0]['href'].split('=')[1]
+        else:
+            infourl = None
+        actor.append(infourl)
         print(infourl)
 
         # 배우 이름
         ele_name = act.select('.p_info > a')
-        name = ele_name[0].text
+        if(len(ele_name[0].text)>0):
+            name = ele_name[0].text
+        else:
+            name = None
+        actor.append(name)
+
         print(name)
 
         #배우 영어이름
@@ -60,6 +75,8 @@ def get_actor(actortab_url) :
             ename = ele_ename[0].text
         else:
             ename = None
+        actor.append(ename)
+        
         print(ename)
 
         #배우 조연/주연
@@ -68,6 +85,8 @@ def get_actor(actortab_url) :
             part = ele_part[0].text
         else:
             part = None
+        actor.append(part)
+
         print(part)
 
         #배역 (...역)
@@ -76,23 +95,33 @@ def get_actor(actortab_url) :
             part2 = ele_part2[0].text
         else:
             part2 = None
+        actor.append(part2)
+
         print(part2)
-
-        #출연 영화
+        career_arr =[]
         ele_movie = act.select('.mv_product > li > a')
-        if(len(ele_movie[0].text)>0):
-            movie = ele_movie[0].text
-        else:
-            movie = None
-        print(movie)
+        for i in range(len(ele_movie)):
+            #출연 영화
+            if(len(ele_movie[i].text)>0):
+                movie = ele_movie[i].text
+            else:
+                movie = None
+            print(movie)
 
-        #출연 영화
-        ele_year = act.select('.mv_product > li > span')
-        if(len(ele_year[0].text)>0):
-            year = ele_year[0].text
-        else:
-            year = None
-        print(year)
+            #출연 영화 개붕년도
+            ele_year = act.select('.mv_product > li > span')
+            if(len(ele_year[i].text)>0):
+                year = ele_year[i].text
+            else:
+                year = None
+            print(year)
+
+            career = [movie,year]
+            career_arr.append(career)
+        actor.append(career_arr)
+
+        actor_arr.append(actor)
+        
 
         
 
@@ -100,48 +129,65 @@ def get_actor(actortab_url) :
     # 단역
     sub_actor = soup.select('#subActorList span')
     for sub in sub_actor:
+        subactor = []
+
         #단역들 이름
         e_name = sub.select('a')
 
         if(len(e_name[0].text)>0):
             e_namea = e_name[0].text
+            e_namecode = e_name[0]['href'].split('=')[1] #단역들 코드
         else:
             e_namea = None
+            e_namecode = None
         print(e_namea)
+        print(e_namecode)
+        subactor.append(e_namea)
+        subactor.append(e_namecode)
+
 
         # 단역들 배역 이름
         em_name = sub.select('em')
         if(len(em_name[0].text)>0):
-            e_namea = em_name[0].text
+            e_nameb = em_name[0].text
         else:
-            e_namea = None
-        print(e_namea)
+            e_nameb = None
+        print(e_nameb)
+        subactor.append(e_nameb)
+
+        subactor_arr.append(subactor)
+
+    return [actor_arr,subactor_arr]
         
 # 감독
-def get_director(actortab_url):
-    url="https://movie.naver.com/movie/bi/mi/detail.naver?code=204138"
+def get_director(code):
+    url = 'https://movie.naver.com/movie/bi/mi/detail.naver?code='+str(code)
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
 
     producer = soup.select('div.dir_obj')
-
+    director_arr = []
+    
     for pr in producer:
         # 감독 썸네일
+        director = []
         thumbnail = pr.select('p.thumb_dir > a > img')
         if(len(thumbnail)>0):
             img = thumbnail[0]['src']
         else:
             img = None
         print(img)
+        director.append(img)
 
-        #감독정보 url
+        #감독정보 code
         url = pr.select('p.thumb_dir > a')
-        info_url="https://movie.naver.com"
+        
         if(len(url)>0):
-            info_url += url[0]['href']
+            info_url = url[0]['href'].split('code=')[1]
         else:
             info_url = None
         print(info_url)
+        director.append(info_url)
 
         #감독 이름
         dir_name = pr.select('div.dir_product > a')
@@ -150,14 +196,14 @@ def get_director(actortab_url):
         else:
             name = None
         print(name)
-
+        director.append(name)
         #감독 영어이름
         dir_ename = pr.select('em.e_name')
         ename=dir_ename[0].text
         if len(ename)==0 :
             ename = None
         print(ename)
-
+        director.append(ename)
         #다른작품
         other_list = pr.select('.other_mv_group ul.other_list li')
         for other in other_list:
@@ -190,26 +236,29 @@ def get_director(actortab_url):
                 country = None
             print(country)
 
+        director_arr.append(director)
+    return director_arr
+
 # 제작진
-def get_producer(actortab_url):
-    url="https://movie.naver.com/movie/bi/mi/detail.naver?code=204138"
+def get_producer(code):
+    url = 'https://movie.naver.com/movie/bi/mi/detail.naver?code='+ str(code)
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text,"lxml")
 
     staff = soup.select('div.staff tr')
-
+    staff_arr = []
     for st in staff:
+        producer_staff = []
         span = st.select('span')
         for sp in span :
-            #정보 url
-            str_url = "https://movie.naver.com"
+            #정보 code
             url =  sp.select('a')
             if(len(url)>0):
-                str_url += url[0]['href']
+                str_url = url[0]['href'].split('code=')[1]
             else:
                 str_url = None
             print(str_url)
-
+            producer_staff.append(str_url)
             
 
             # 영어이름 , 담당
@@ -220,6 +269,8 @@ def get_producer(actortab_url):
                 ename_s=None
             print(ename_s)
             print(part_s)
+            producer_staff.append(ename_s)
+            producer_staff.append(part_s)
 
 
             tmp=""
@@ -232,7 +283,46 @@ def get_producer(actortab_url):
             else:
                 name_s = sp.text.replace(tmp,'').replace(part_s,'').replace('\t','').replace('\r','').replace('\n','')
             print(name_s)
+            producer_staff.append(name_s)
+            staff_arr.append(producer_staff)
+        return staff_arr
 
+# 제작/수입/배급사
+def get_company(code):
+    url = 'https://movie.naver.com/movie/bi/mi/detail.naver?code='+str(code)
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text,"lxml") 
+
+    company = soup.select('#content > div.article > div:nth-child(7) > div:nth-child(2) > div > dl')
+    # print(company)
+    com_arr=[]
+    for com in company:
+        a = com.select('dd')
+        b = com.select('dt > em')
+        com1 = []
+
+        for i in range(len(a)) :
+            company_role =b[i].text.strip()
+            company_name = a[i].text.strip()
+            print(company_role)
+            print(company_name)
+            com1.append(company_role)
+            com1.append(company_name)
+        com_arr.append(com1)
+    return com_arr
+
+        
+def get_relate(code):
+    
+    url = 'https://movie.naver.com/movie/bi/mi/scriptAndRelate.naver?code='+str(code)
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text,"lxml") 
+    ret =[]
+    relate_movie = soup.select('#content > div.article > div:nth-child(7) > div > div > ul > li > h5 > a')
+    for relate in relate_movie:
+        ret.append(relate['href'].split('code=')[1])
+    print(ret)
+    return ret
 
 @dataclass
 class Actor:
@@ -247,4 +337,6 @@ class Actor:
 
 
 if __name__ == '__main__':
-    get_producer(0)
+    url1 = 192608
+
+    get_relate(url1)
