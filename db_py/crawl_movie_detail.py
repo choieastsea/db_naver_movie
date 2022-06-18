@@ -104,7 +104,7 @@ def get_moie_data(code):
         movie_country = movie_country_raw[0].text if len(
             movie_country_raw) != 0 else None
         # 영화 시간
-        running_time = int(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip()[ :-1])) if len(running_time_raw) != 0 else None
+        running_time = int(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip()[ :-1])) if len(re.sub(r'[^0-9]', '', running_time_raw[0].text.strip()[ :-1])) != 0 else None
         # 영화 개봉일 -> 아마 이대로 db 저장해도 될듯?
         opening_date = ''
         for em in opening_date_raw:
