@@ -8,7 +8,23 @@ from crawl_movie_basic import get_basic
 from crawl_movie_basic import get_actor
 from crawl_movie_basic import get_director
 from crawl_movie_basic import get_producer
-from crawl_movie_detail import get_data_from_movie_url
+from crawl_movie_basic import get_company
+from crawl_movie_basic import get_relate
+from crawl_movie_detail import get_comment_data
+from crawl_movie_detail import get_data_from_review_url
+from crawl_movie_detail import get_enjoy_point_data
+from crawl_movie_detail import get_movie_data
+from crawl_movie_detail import get_quotes_data
+from crawl_movie_detail import get_photo_data
+from crawl_movie_detail import get_satisfying_netizen_data
+from crawl_movie_detail import get_satisfying_viewer_data
+from crawl_movie_detail import get_score_data
+from crawl_movie_detail import get_viewing_trend_data
+from crawl_movie_detail import get_video_data
+
+NETIZEN = 1
+VIEWER = 2
+CRITIC = 3
 
 def insert_movie():
     # a=[]
@@ -44,79 +60,122 @@ def insert_movie():
     
     addr = get_url() # addr은 영화 코드 배열
     mpeople_index=int(147483647)
-    for movie_code in addr:
+    for movie_code2 in addr:
+        movie_code = int(movie_code2)
         [story,makingnote] = get_basic(movie_code)
+        movie_data= get_movie_data(movie_code)
 
-
-        # movie =  [code,  "해외영화등급", "스토리 ~~~~", "메이킹 노트","A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부" ]
-    # 영화루프 진입했다고 가정.
+        genre = movie_data[5]
+        country = movie_data[6]
+        # movie =  [code,한국영화등급 , "해외영화등급", "스토리 ~~~~", "메이킹 노트","A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부",img ,runningtime ,누적관객수]
     
-
         [story,makingnote] = get_basic(movie_code)
-        movie=[movie_code,"국내영화등급", "해외영화등급", story, makingnote ,"A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부" ]
+
+        # 영화 기본 정보 배열
+        movie=[movie_code,movie_data[9], movie_data[10], story, makingnote ,movie_data[12], movie_data[2], movie_data[3] ,movie_data[8], movie_data[1], movie_data[4], movie_data[7],movie_data[11] ]
 
         [actor,subactor] = get_actor(movie_code)
-        [director_arr] = get_director(movie_code)
-        [producer_arr] = get_producer(movie_code)
+        director_arr = get_director(movie_code)
+        producer_arr = get_producer(movie_code)
+
         #  영화인 - 배우
         for act in actor : 
             # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연 act[5] : ...역
+
             if act[1]==None:
-                mpeople = [mpeople_index,act[0] ,act[2],  act[3]]
+                subpeople = [mpeople_index,movie_code ,act[2],  act[5]]
                 mpeople_index +=1
             else:
-                mpeople = [act[1],act[0] ,act[2],  act[3]]
+                mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
 
-            movie_appearance = [act[1],movie_code,act[5]]
-            # 명대사 quotes get 함수 & for문
-            quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+            movie_appearance = [int(act[1]),movie_code,act[5]]
 
-            casting = [act[1],movie_code,"주연/ 조연"]
+            casting = [int(act[1]),movie_code,act[4]]
 
         # 영화인 - 서브배우
         for act in subactor : 
-            # act[0] :이름 act[1]:영화인code act[2]:...역
+            # act[0] :이름, act[1]:영화인code, act[2]:...역
             if act[1]==None:
-                mpeople = [mpeople_index,None ,act[0],  None]
+                subpeople = [mpeople_index,movie_code ,act[0],  act[2]]
                 mpeople_index +=1
             else:
-                mpeople = [act[1],None ,act[0],  None]
+                mpeople = [int(act[1]),None ,act[0],  None]
 
-            movie_appearance = [act[1],movie_code,act[2]]
-            # 명대사 quotes get 함수 & for문
-            quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+            movie_appearance = [int(act[1]),movie_code,act[2]]
 
-            casting = [act[1],movie_code,"주연/ 조연"]
+            casting = [int(act[1]),movie_code,None]
         
         # 영화인 - 감독
         for act in director_arr : 
-            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연/감독 act[5] : ...역
+            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 
             if act[1]==None:
-                mpeople = [mpeople_index,act[0] ,act[2],  act[3]]
+                subpeople = [mpeople_index,movie_code ,act[2],  "감독"]
                 mpeople_index +=1
             else:
-                mpeople = [act[1],act[0] ,act[2],  act[3]]
+                mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
 
-            movie_appearance = [act[1],movie_code,None]
+            movie_appearance = [int(act[1]),movie_code,None]
             # 명대사 quotes get 함수 & for문
             # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
 
-            casting = [act[1],movie_code,"감독"]
+            casting = [int(act[1]),movie_code,"감독"]
         
         # 영화인 - 제작진
         for act in producer_arr : 
-            #  act[0]:영화인code act[2] :주연/조연  act[3]:이름 act[1]: 영어이름
+            #  act[0]:영화인code act[2] :part  act[3]:이름 act[1]: 영어이름
             if act[0]==None:
-                mpeople = [mpeople_index,None ,act[3],  act[1]]
+                if(act[3]==None):
+                    act[3]=act[1]
+                subpeople = [mpeople_index,movie_code ,act[3],  act[2]]
                 mpeople_index +=1
             else:
-                mpeople = [act[0],None ,act[3],  act[1]]
+                mpeople = [int(act[0]),None ,act[3],  act[1]]
 
-            movie_appearance = [act[0],movie_code,None]
-            # 명대사 quotes get 함수 & for문
-            # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+            movie_appearance = [int(act[0]),movie_code,None]
 
-            casting = [act[0],movie_code, act[2]]
+            casting = [int(act[0]),movie_code, act[2]]
+
+        # 명대사
+        quotes_arr = get_quotes_data(movie_code)
+        for quote in quotes_arr:
+            # quote[1] : people code  quote[2] = comment , quote[5]: 추천수 , quote[6] : user id
+        
+            quotes = [int(quote[1]),movie_code, quote[2],int(quote[5]),quote[6]]
+        
+        # 연관영화
+        relates = get_relate(movie_code)
+        for relate_movie in relates:
+            insert_value = [movie_code, int(relate_movie)]
+
+        # 한줄평
+
+        # 리뷰
+
+        # 평점 (score)
+        scores = get_score_data(movie_code)
+
+        # 장르
+
+        # 나라(country)
+
+        # 회사
+
+        # 사진
+
+        # 동영상
+
+        # enjoy_point
+
+        # satifying_netizen
+
+        # satifying_viewer
+
+        # viewing trend
+
+
+
+
+
 
 
 # ##########################################################################################################################################

@@ -121,10 +121,6 @@ def get_actor(code) :
         actor.append(career_arr)
 
         actor_arr.append(actor)
-        
-
-        
-
 
     # 단역
     sub_actor = soup.select('#subActorList span')
