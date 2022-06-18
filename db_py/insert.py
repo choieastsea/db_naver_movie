@@ -201,7 +201,7 @@ def insert_movie():
         photoes  = get_photo_data(movie_code)
         if photoes !=None:
             for photo in photoes:
-                insert_value = [movie_code, photo[0]]
+                insert_value = [movie_code, photo[1]]
         # 동영상
         videos = get_video_data(movie_code)
         if videos !=None:
@@ -216,31 +216,24 @@ def insert_movie():
 
         # satifying_netizen
         sns = get_satisfying_netizen_data(movie_code)
-        if sns !=None:
-            for sn1 in sns:
-                if(sn1!=None):
-                    insert_value = [movie_code, sn1[0],sn1[1],sn1[2],sn1[3],sn1[4],sn1[5],sn1[6]]
-                else:
-                    insert_value = [movie_code, None,None,None,None,None,None,None]
+        if sns!=None:
+            insert_value = [movie_code, sns[0],sns[1],sns[2],sns[3],sns[4],sns[5],sns[6]]
+        else:
+            insert_value = [movie_code, None,None,None,None,None,None,None]
 
         # satifying_viewer
         svs = get_satisfying_viewer_data(movie_code)
-        if svs !=None:
-            for sv in svs:
-                if(sv!=None):
-                    insert_value = [movie_code, sv[0],sv[1],sv[2],sv[3],sv[4],sv[5],sv[6]]
-                else:
-                    insert_value = [movie_code, None,None,None,None,None,None,None]
-
+        if svs!=None:
+            insert_value = [movie_code, svs[0],svs[1],svs[2],svs[3],svs[4],svs[5],svs[6]]
+        else:
+            insert_value = [movie_code, None,None,None,None,None,None,None]
 
         # viewing trend
         vts = get_viewing_trend_data(movie_code)
-        if vts !=None:
-            for vt in vts:
-                if vt != None:
-                    insert_value = [movie_code, vt[0],vt[1],vt[2],vt[3],vt[4]]
-                else:
-                    insert_value = [movie_code, None,None,None,None,None]
+        if vts != None:
+            insert_value = [movie_code, vts[0],vts[1],vts[2],vts[3],vts[4]]
+        else:
+            insert_value = [movie_code, None,None,None,None,None]
 
 
 
