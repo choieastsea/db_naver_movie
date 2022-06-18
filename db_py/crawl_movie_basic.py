@@ -13,16 +13,19 @@ def get_basic(code):
     # 줄거리
     story = "" 
     element = soup.select('#content > div.article > div.section_group.section_group_frst > div:nth-child(1) > div > div.story_area > h5')
-    story += element[0].text
-    story += "\n"
+    if(len(element)!=0):
+        story += element[0].text
+        story += "\n"
     element = soup.select('#content > div.article > div.section_group.section_group_frst > div:nth-child(1) > div > div.story_area > p')
-    story += element[0].text
+    if(len(element)!=0):
+        story += element[0].text
     print(story)
     
     # 제작노트
     makingnote=""
     element = soup.select('#makingnotePhase')
-    makingnote +=element[0].text
+    if(len(element)!=0):
+        makingnote +=element[0].text
     print(makingnote)
 
     return [story,makingnote]
@@ -91,7 +94,7 @@ def get_actor(code) :
 
         #배역 (...역)
         ele_part2 = act.select('.p_info > .part p.pe_cmt > span')
-        if(len(ele_part2[0].text)>0):
+        if(len(ele_part2)>0):
             part2 = ele_part2[0].text
         else:
             part2 = None

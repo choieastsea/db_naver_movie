@@ -53,7 +53,6 @@ def get_url():
         if i == 6 :
             break
 
-        print(addr)
     return addr
 
 

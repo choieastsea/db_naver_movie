@@ -1,8 +1,12 @@
+from shutil import which
+from tokenize import Double
 import pymysql
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 from init_db import open_db
+from enum import Enum
+
 from enter import get_url
 from crawl_movie_basic import get_basic
 from crawl_movie_basic import get_actor
@@ -13,7 +17,7 @@ from crawl_movie_basic import get_relate
 from crawl_movie_detail import get_comment_data
 from crawl_movie_detail import get_data_from_review_url
 from crawl_movie_detail import get_enjoy_point_data
-from crawl_movie_detail import get_movie_data
+from crawl_movie_detail import get_moie_data
 from crawl_movie_detail import get_quotes_data
 from crawl_movie_detail import get_photo_data
 from crawl_movie_detail import get_satisfying_netizen_data
@@ -63,175 +67,272 @@ def insert_movie():
     for movie_code2 in addr:
         movie_code = int(movie_code2)
         [story,makingnote] = get_basic(movie_code)
-        movie_data= get_movie_data(movie_code)
-
-        genre = movie_data[5]
-        country = movie_data[6]
+        movie_data= get_moie_data(movie_code)
+        
         # movie =  [code,한국영화등급 , "해외영화등급", "스토리 ~~~~", "메이킹 노트","A.K.A", "영화이름(국내)", "영화이름(해외) ","2020-10-10", "상영중 여부",img ,runningtime ,누적관객수]
     
         [story,makingnote] = get_basic(movie_code)
 
         # 영화 기본 정보 배열
-        movie=[movie_code,movie_data[9], movie_data[10], story, makingnote ,movie_data[12], movie_data[2], movie_data[3] ,movie_data[8], movie_data[1], movie_data[4], movie_data[7],movie_data[11] ]
+        movie=[movie_code,movie_data[9], movie_data[10], story, makingnote ,movie_data[12], movie_data[2], movie_data[3] ,movie_data[8], movie_data[1], movie_data[4], movie_data[7],movie_data[11],movie_data[6]]
 
         [actor,subactor] = get_actor(movie_code)
         director_arr = get_director(movie_code)
         producer_arr = get_producer(movie_code)
-
+        
         #  영화인 - 배우
-        for act in actor : 
-            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연 act[5] : ...역
+        if actor!=None:
+            for act in actor : 
+                # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 act[4] :주연/조연 act[5] : ...역
 
-            if act[1]==None:
-                subpeople = [mpeople_index,movie_code ,act[2],  act[5]]
-                mpeople_index +=1
-            else:
-                mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
+                if act[1]==None:
+                    subpeople = [mpeople_index,movie_code ,act[2],  act[5]]
+                    mpeople_index +=1
+                    # commit(SQL.mpeople_sub,subpeople)
+                else:
+                    mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
 
-            movie_appearance = [int(act[1]),movie_code,act[5]]
+                movie_appearance = [int(act[1]),movie_code,act[5]]
 
-            casting = [int(act[1]),movie_code,act[4]]
+                casting = [int(act[1]),movie_code,act[4]]
 
         # 영화인 - 서브배우
-        for act in subactor : 
-            # act[0] :이름, act[1]:영화인code, act[2]:...역
-            if act[1]==None:
-                subpeople = [mpeople_index,movie_code ,act[0],  act[2]]
-                mpeople_index +=1
-            else:
-                mpeople = [int(act[1]),None ,act[0],  None]
+        if subactor!=None:
+            for act in subactor : 
+                # act[0] :이름, act[1]:영화인code, act[2]:...역
+                if act[1]==None:
+                    subpeople = [mpeople_index,movie_code ,act[0],  act[2]]
+                    mpeople_index +=1
+                else:
+                    mpeople = [int(act[1]),None ,act[0],  None]
 
-            movie_appearance = [int(act[1]),movie_code,act[2]]
+                movie_appearance = [int(act[1]),movie_code,act[2]]
 
-            casting = [int(act[1]),movie_code,None]
+                casting = [int(act[1]),movie_code,None]
         
         # 영화인 - 감독
-        for act in director_arr : 
-            # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 
-            if act[1]==None:
-                subpeople = [mpeople_index,movie_code ,act[2],  "감독"]
-                mpeople_index +=1
-            else:
-                mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
+        if director_arr!=None:
+            for act in director_arr : 
+                # act[0] : tumbnail act[1]:영화인code act[2]:이름 act[3]: 영어이름 
+                if act[1]==None:
+                    subpeople = [mpeople_index,movie_code ,act[2],  "감독"]
+                    mpeople_index +=1
+                else:
+                    mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
 
-            movie_appearance = [int(act[1]),movie_code,None]
-            # 명대사 quotes get 함수 & for문
-            # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+                movie_appearance = [int(act[1]),movie_code,None]
+                # 명대사 quotes get 함수 & for문
+                # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
 
-            casting = [int(act[1]),movie_code,"감독"]
+                casting = [int(act[1]),movie_code,"감독"]
         
         # 영화인 - 제작진
-        for act in producer_arr : 
-            #  act[0]:영화인code act[2] :part  act[3]:이름 act[1]: 영어이름
-            if act[0]==None:
-                if(act[3]==None):
-                    act[3]=act[1]
-                subpeople = [mpeople_index,movie_code ,act[3],  act[2]]
-                mpeople_index +=1
-            else:
-                mpeople = [int(act[0]),None ,act[3],  act[1]]
+        if producer_arr!=None:
+            for act in producer_arr : 
+                #  act[0]:영화인code act[2] :part  act[3]:이름 act[1]: 영어이름
+                if act[0]==None:
+                    if(act[3]==None):
+                        act[3]=act[1]
+                    subpeople = [mpeople_index,movie_code ,act[3],  act[2]]
+                    mpeople_index +=1
+                else:
+                    mpeople = [int(act[0]),None ,act[3],  act[1]]
 
-            movie_appearance = [int(act[0]),movie_code,None]
+                movie_appearance = [int(act[0]),movie_code,None]
 
-            casting = [int(act[0]),movie_code, act[2]]
+                casting = [int(act[0]),movie_code, act[2]]
 
         # 명대사
         quotes_arr = get_quotes_data(movie_code)
-        for quote in quotes_arr:
-            # quote[1] : people code  quote[2] = comment , quote[5]: 추천수 , quote[6] : user id
+        if quotes_arr !=None:
+            for quote in quotes_arr:
+                # quote[1] : people code  quote[2] = comment , quote[5]: 추천수 , quote[6] : user id
         
-            quotes = [int(quote[1]),movie_code, quote[2],int(quote[5]),quote[6]]
+                quotes = [int(quote[1]),movie_code, quote[2],int(quote[5]),quote[6]]
         
         # 연관영화
         relates = get_relate(movie_code)
-        for relate_movie in relates:
-            insert_value = [movie_code, int(relate_movie)]
+        if relates !=None:
+            for relate_movie in relates:
+                insert_value = [movie_code, int(relate_movie)]
 
         # 한줄평
+        comments = get_comment_data(movie_code)
+        if comments !=None:
+            for comment in comments:
+                insert_value = [movie_code, int(comment[1]),comment[2],comment[3]]
 
         # 리뷰
+        review_data_list = get_data_from_review_url(movie_code)
+        if review_data_list !=None:
+            for review in review_data_list :
+                if review[1]==None: review[1]=0
+                if review[4]==None: review[4]=0
+                if review[5]==None: review[5]=0
+                
+                insert_value = [movie_code, review[0],int(review[4]),int(review[5]),review[2],review[3],review[6],int(review[1])]
 
         # 평점 (score)
         scores = get_score_data(movie_code)
+        if scores !=None:
+            for score1 in scores : 
+                if score1[1] == None:
+                    insert_value = [movie_code, score1[2], None, int(score1[3])]
+
+                elif score1[3] == None:
+                    insert_value = [movie_code, score1[2],  int(score1[1]), None]
+                
+                elif score1[3] == None and score1[1] == None:
+                    insert_value = [movie_code, score1[2], None, None]
 
         # 장르
-
-        # 나라(country)
+        genres = movie_data[5]
+        if genres !=None:
+            for genre in genres:
+                insert_value = [genre,movie_code]
 
         # 회사
+        companies = get_company(movie_code)
+        if companies !=None:
+            for company in companies:
+                insert_value = [movie_code, company[1],company[0]]
 
         # 사진
-
+        photoes  = get_photo_data(movie_code)
+        if photoes !=None:
+            for photo in photoes:
+                insert_value = [movie_code, photo[0]]
         # 동영상
+        videos = get_video_data(movie_code)
+        if videos !=None:
+            for video in videos:
+                insert_value = [movie_code, video[3], video[2],video[1]]
 
         # enjoy_point
+        eps = get_enjoy_point_data(movie_code)
+        if eps !=None:
+            for ep in eps:
+                insert_value = [movie_code,ep[1],ep[2],ep[3],ep[4],ep[5],int(ep[0])]
 
         # satifying_netizen
+        sns = get_satisfying_netizen_data(movie_code)
+        if sns !=None:
+            for sn1 in sns:
+                if(sn1!=None):
+                    insert_value = [movie_code, sn1[0],sn1[1],sn1[2],sn1[3],sn1[4],sn1[5],sn1[6]]
+                else:
+                    insert_value = [movie_code, None,None,None,None,None,None,None]
 
         # satifying_viewer
+        svs = get_satisfying_viewer_data(movie_code)
+        if svs !=None:
+            for sv in svs:
+                if(sv!=None):
+                    insert_value = [movie_code, sv[0],sv[1],sv[2],sv[3],sv[4],sv[5],sv[6]]
+                else:
+                    insert_value = [movie_code, None,None,None,None,None,None,None]
+
 
         # viewing trend
+        vts = get_viewing_trend_data(movie_code)
+        if vts !=None:
+            for vt in vts:
+                if vt != None:
+                    insert_value = [movie_code, vt[0],vt[1],vt[2],vt[3],vt[4]]
+                else:
+                    insert_value = [movie_code, None,None,None,None,None]
 
 
 
 
-
-
-
-# ##########################################################################################################################################
-    # mpeople_sub = [movie_code,"보조영화인이름","역할 - 감독/제작진 등"]
-
-    # # 영화인
-    # mpeople_code =213123
-    # # mpeople_id = 1  # 0부터 1씩 증가하는 영화인 id를 우리가 직접 넣어준다.
-    # mpeople = [mpeople_code,"tumbnail url" ,"마동석", "코드30123"]
-    # # 영화인 출연
-    # movie_appearance = [movie_code, mpeople_code , " ~~역 (role)"] # 얘로 appearance테이블 생성
-    # # 영화인 - 출연 - 명대사 
-    # quote = [mpeople_code,movie_code, "명대사 내용", 300] # 300은 추천수
-    # # 영화인 - 출연 - 역할 
-    # casting = [mpeople_code,movie_code, "배역 이름 ex) 감독 주연 기획 제작 조연 등등"]
-
-
-    # # 연관영화
-    # relate_movie_code = 1112 # 연관영화의 코드를 크롤링한다.
-    # relate_movie = [movie_code, relate_movie_code]
-
-    # # 한줄평 [ autoincrement, moviecode, 평점, 코멘트내용,기자인지 관람객인지 네티즌인지, 작성시간, 추천, 비추천]
-    # comment = [movie_code,5,"한줄평내용", "네티즌", "2021년12월23일 16시45분",300,28]
-
-    # # 평점
-    # score = [movie_code, 9.4, "네티즌", 328]
-
-    # # 리뷰
-    # review_id = 1 # 0부터 1씩 증가하는 리뷰id를 우리가 직접 넣어준다. 
-    # # 450 = 조회수
-    # review = [review_id, movie_code, "리뷰 제목", 450 , 300 , 28 , "2022년06월10일", "작성자"]
-    # # 리뷰의 댓글
-    # review_comment = [review_id, movie_code, "작성자", 300 , 28, "답글내용", "2022년6월12일"]
-
-
-    
-    # commit(a,genre,movie_index)
-
-
-def commit(a,genre,movie_index):
+# flag  1: movie 2:people 3:movie_appearance 4:quotes 5:casting 6:mpeople_sub 7:relate_movie 8:comment 9:review 10:score 11:review_comment 12:genre 13:country 14:company 15:photo 16:video 17:enjoy_point 18:satisfying_netizen 19:viewing_trend 20:satisfying_viewer
+def commit(flag, a):
     [conn,curs] = open_db()
-
-    sql ="""insert into movie (title, title_eng, film_rating,film_rating_foreign,summary,makingnote,aka,country,releasedate,screening) 
-        values (%s, %s, %s,%s,%s,%s,%s,%s,%s,%s);"""
-    sql2 ="""insert into movie_genre (movie_index,genre_id) 
+    if flag== SQL.movie:
+         sql = """insert into movie (movie_code, film_rate_kor, film_rate_foreign , story, makingnote , aka , title_kor , title_foreign , release_date, current_opening, img_url , running,time, cumulate_audience,country) 
+        values (%s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"""
+    elif flag== 2 :
+         sql = """insert into peoole (people_code, thumbnail, name , eng_name) 
+        values (%s, %s, %s,%s);"""
+    elif flag== 3 :
+        sql = """insert into movie_appearance (people_code, movie_code, role) 
+        values (%s, %s, %s);"""
+    elif flag== 4 :
+        sql = """insert into quotes (people_code, movie_code, quotes , good, userid) 
+        values (%s, %s, %s,%s,%s);"""
+    elif flag== 5 :
+        sql = """insert into casting (peoole_code, movie_code, casting_name) 
+        values (%s, %s, %s);"""
+    elif flag== 6 :
+        sql = """insert into mpeople_sub (movie_code, name, casting) 
+        values (%s, %s, %s);"""
+    elif flag== 7 :
+        sql = """insert into relate_movie (movie_code, movie_code1) 
         values (%s, %s);"""
-    
+    elif flag== 8 :
+        sql = """insert into comment (movie_code, score, comment , type) 
+        values (%s, %s, %s,%s);"""
+    elif flag== 9 :
+        sql = """insert into review (review_id, movie_code, title , view_num, good , date , writer , contents ) 
+        values (%s, %s, %s,%s,%s,%s,%s,%s);"""
+    elif flag== 10 :
+        sql = """insert into score (movie_code, score, type , story, comment_number) 
+        values (%s, %s, %s,%s,%s);"""
+    elif flag== 12 :
+        sql = """insert into genre (genre_name, movie_code) 
+        values (%s, %s);"""
+    elif flag== 14 :
+        sql = """insert into company (movie_code, name, role) 
+        values (%s, %s, %s);"""
+    elif flag== 15 :
+        sql = """insert into photo (movie_code, url) 
+        values (%s, %s);"""
+    elif flag== 16 :
+        sql = """insert into video (movie_code, video_url, thumbnail_url , title) 
+        values (%s, %s, %s,%s);"""
+    elif flag== 17 :
+        sql = """insert into enjoy_point (movie_code, production, acting , story, recording_beauty , ost,type ) 
+        values (%s, %s, %s,%s,%s,%s,%s);"""
+    elif flag== 18 :
+        sql = """insert into satisfying_netizen (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
+        values (%s, %s, %s,%s,%s,%s,%s,%s);"""
+    elif flag== 19 :
+        sql = """insert into viewing_trend (movie_code, tenth , twentieth , thirtieth , fortieth , fiftieth) 
+        values ( %s,%s,%s,%s,%s,%s);"""
+    elif flag== 20 :
+        sql = """insert into satisfying_viewer (movie_code, male, female , tenth, twentieth , thirtieth , fortieth , fiftieth ) 
+        values (%s, %s, %s,%s,%s,%s,%s,%s);"""
+    else : 
+        print("invalid sql")
+
     # print(a)
     curs.executemany(sql, a)
-    for g in genre:
-        curs.executemany(sql, [movie_index,g])
     
     conn.commit()
     curs.close()
     conn.close()
 
+class SQL(Enum):
+    movie = 1
+    people = 2
+    movie_appearance = 3
+    quotes = 4
+    casting = 5
+    mpeople_sub = 6
+    relate_movie = 7
+    comment = 8
+    review =9
+    score = 10
+    review_comment = 11
+    genre = 12
+    country = 13
+    company = 14
+    photo = 15
+    video = 16
+    enjoy_point = 17
+    satisfying_netizen = 18
+    viewing_trend = 19
+    satisfying_viewer = 20
 
 if __name__ == '__main__':
     insert_movie()
