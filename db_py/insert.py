@@ -219,6 +219,9 @@ def insert_movie():
         if sns !=None:
             for sn1 in sns:
                 if(sn1!=None):
+                    for i in range(len(sn1)):
+                        if sn1[i] == None:
+                            sn1[i]=0.0
                     insert_value = [movie_code, sn1[0],sn1[1],sn1[2],sn1[3],sn1[4],sn1[5],sn1[6]]
                 else:
                     insert_value = [movie_code, None,None,None,None,None,None,None]
