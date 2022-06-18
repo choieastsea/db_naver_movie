@@ -169,7 +169,9 @@ def insert_movie():
         if quotes_arr !=None:
             for quote in quotes_arr:
                 # quote[1] : people code  quote[2] = comment , quote[5]: 추천수 , quote[6] : user id
-        
+                if quote[1] == None: quote[1]=0
+                if quote[5] == None: quote[5]=0
+
                 quotes = [int(quote[1]),movie_code, quote[2],int(quote[5]),quote[6]]
                 commitq(SQL.quotes,quotes)
 
