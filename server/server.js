@@ -3,9 +3,9 @@ const mysql = require("mysql2/promise");
 const app = express();
 const pool = mysql.createPool({
   host: "localhost",
-  user: "db_konkuk",
+  user: "root",
   database: "naver_movie",
-  password: "6812",
+  password: "1234",
 });
 app.get("/api/movie/basic", async (req, res) => {
   const code = req.query.code;
