@@ -29,6 +29,19 @@ app.get("/api/movie/basic", async (req, res) => {
     let [video_row] = await pool.query(
       `select * from video where movie_code=${code};`
     );
+    // select * from satisfying_netizen where movie_code=192608;
+    // select * from satisfying_viewer where movie_code=192608;
+    // select  * from viewing_trend where movie_code=192608;
+    let [netizen_sat] = await pool.query(
+      `select * from satisfying_netizen where movie_code=${code};`
+    );
+    let [viewer_sat] = await pool.query(
+      `select * from satisfying_viewer where movie_code=${code};`
+    );
+    let [viewing_trend] = await pool.query(
+      `select * from viewing_trend where movie_code=${code};`
+    );
+
     score_arr = [];
     for (let i = 0; i < score_row.length; i++) {
       score_arr.push(score_row[i]);
@@ -57,6 +70,9 @@ app.get("/api/movie/basic", async (req, res) => {
       photo_arr: photo_arr,
       relative_arr: relative_arr,
       video_arr,
+      netizen_sat: netizen_sat[0],
+      viewer_sat: viewer_sat[0],
+      viewing_trend: viewing_trend[0],
     };
     console.log(return_obj);
     res.json(return_obj);
@@ -174,7 +190,7 @@ app.get("/api/start", async (req, res) => {
   console.log(`${userInput}`);
   try {
     const [row1] = await pool.query(
-      `select title_kor, movie_code, release_date from movie where title_kor like "${userInput}%" limit 5;`
+      `select title_kor, movie_code from movie where title_kor like "${userInput}%" limit 5;`
     );
     const [row2] = await pool.query(
       `select * from people where name like "${userInput}%" limit 5;`

@@ -12,11 +12,14 @@ ul {
   text-decoration: none;
   color: cornflowerblue;
 }
+.ft-sm {
+  font-size: 13px;
+}
 .content {
   width: 1000px;
   margin: 0 auto;
 }
-a{
+a {
   text-decoration: none;
   color: black;
 }

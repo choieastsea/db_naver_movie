@@ -3,13 +3,14 @@ import { useSearchParams } from "react-router-dom";
 import { NotFound } from "./NotFound";
 import BasicMovie from "../component/BasicMovie";
 import MovieSummary from "../component/MovieSummary";
-import { Tabs, Tab, Box, CircularProgress, Grid } from "@mui/material";
+import { Tabs, Tab, Box, CircularProgress, Grid, Button } from "@mui/material";
 import { Review } from "../component/MovieReview";
 import { MovieCasting } from "../component/MovieCasting";
 import { MoviePhoto } from "../component/MoviePhoto";
 import { Score } from "../component/MovieScore";
 import { ETC } from "../component/MovieEtc";
 import { MovieVideo } from "../component/MovieVideo";
+import { MovieTrend } from "../component/MovieTrend";
 export const MoviePage = () => {
   /* 해당 영화 코드의 영화의 페이지. 여러 탭으로 구성되어 있으며, 각 탭에 접근시 데이터를 가져오도록 함 */
   const [searchParams] = useSearchParams();
@@ -18,7 +19,7 @@ export const MoviePage = () => {
   const [reviewData, setReviewData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [value, setValue] = useState(0);
-
+  const [showTrend, setShowTrend] = useState(false);
   /* control tab bar */
   const handleChange = (e, newValue) => {
     setValue(newValue);
@@ -47,6 +48,26 @@ export const MoviePage = () => {
               photoData={movieData.photo_arr}
               scoreData={movieData.score_arr}
             />
+            {movieData.viewer_sat.male !== null && (
+              <Button
+                onClick={() => {
+                  setShowTrend((e) => !e);
+                }}
+              >
+                트렌드 확인
+              </Button>
+            )}
+            {movieData.viewer_sat.male !== null
+              ? showTrend && (
+                  <MovieTrend
+                    trendData={{
+                      viewer_sat: movieData.viewer_sat,
+                      netizen_sat: movieData.netizen_sat,
+                      viewing_trend: movieData.viewing_trend,
+                    }}
+                  />
+                )
+              : ""}
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <Tabs
                 value={value}

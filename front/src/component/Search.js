@@ -104,10 +104,7 @@ const AutoFillList = ({ list }) => {
           e.movie_code ? (
             <li key={e.movie_code}>
               <ListItemButton href={`movie?code=${e.movie_code}`}>
-                {e.title_kor}{" "}
-                {e.release_date !== null
-                  ? `(${e.release_date.split(".")[0]})`
-                  : ""}
+                {e.title_kor}
               </ListItemButton>
             </li>
           ) : (
