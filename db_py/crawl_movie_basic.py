@@ -245,21 +245,22 @@ def get_producer(code):
     soup = BeautifulSoup(resp.text,"lxml")
 
     staff = soup.select('div.staff tr')
+    # print(staff)
     staff_arr = []
     for st in staff:
         producer_staff = []
         span = st.select('span')
+        # print(st)
         for sp in span :
             #정보 code
+            
             url =  sp.select('a')
             if(len(url)>0):
                 str_url = url[0]['href'].split('code=')[1]
             else:
                 str_url = None
-            # print(str_url)
             producer_staff.append(str_url)
             
-
             # 영어이름 , 담당
             ename = sp.select('em')
             ename_s = ename[0].text
@@ -283,8 +284,12 @@ def get_producer(code):
                 name_s = sp.text.replace(tmp,'').replace(part_s,'').replace('\t','').replace('\r','').replace('\n','')
             # # print(name_s)
             producer_staff.append(name_s)
-            staff_arr.append(producer_staff)
-        return staff_arr
+            # print(producer_staff)
+
+            staff_arr.append([str_url,ename_s,part_s,name_s])
+
+   # print(staff_arr)
+    return staff_arr
 
 # 제작/수입/배급사
 def get_company(code):
@@ -338,4 +343,4 @@ class Actor:
 if __name__ == '__main__':
     url1 = 192608
 
-    get_relate(url1)
+    get_producer(url1)

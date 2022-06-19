@@ -63,7 +63,7 @@ def insert_movie():
     [conn,curs] = open_db()
 
     addr = get_url() # addr은 영화 코드 배열
-    # addr = [196854]
+    # addr = [192608]
     mpeople_index=int(147483647)
     for movie_code2 in addr:
         movie_code = int(movie_code2)
@@ -148,22 +148,16 @@ def insert_movie():
             for act in producer_arr : 
                 #  act[0]:영화인code act[2] :part  act[3]:이름 act[1]: 영어이름
                 if act[0]==None:
-                    if(act[3]==None):
-                        act[3]=act[1]
                     subpeople = [mpeople_index,movie_code ,act[3],  act[2]]
-                    mpeople_index +=1
                     commitq(conn,curs,SQL.mpeople_sub,subpeople)
-
+                    mpeople_index +=1
                 else:
-                    mpeople = [int(act[0]),None ,act[3],  act[1]]
+                    mpeople = [mpeople_index,None ,act[3],  act[1]]
                     commitq(conn,curs,SQL.people,mpeople)
-
-
-                movie_appearance = [int(act[0]),movie_code,None]
-                commitq(conn,curs,SQL.movie_appearance,movie_appearance)
-
-                casting = [int(act[0]),movie_code, act[2]]
-                commitq(conn,curs,SQL.casting,casting)
+                    movie_appearance = [int(act[0]),movie_code,None]
+                    commitq(conn,curs,SQL.movie_appearance,movie_appearance)
+                    casting = [int(act[0]),movie_code, act[2]]
+                    commitq(conn,curs,SQL.casting,casting)
 
 
         # 명대사
@@ -259,11 +253,14 @@ def insert_movie():
 
 
         # enjoy_point
-        eps = get_enjoy_point_data(movie_code)
+        [eps,eps2] = get_enjoy_point_data(movie_code)
         if eps!=None and len(eps) > 2 :
             insert_value = [movie_code,eps[1],eps[2],eps[3],eps[4],eps[5],int(eps[0])]
             commitq(conn,curs,SQL.enjoy_point,insert_value)
-            insert_value = [movie_code,eps[7],eps[8],eps[9],eps[10],eps[11],int(eps[6])]
+
+
+        if eps2!=None and len(eps2) > 2 :
+            insert_value = [movie_code,eps2[1],eps2[2],eps2[3],eps2[4],eps2[5],int(eps2[0])]
             commitq(conn,curs,SQL.enjoy_point,insert_value)
 
 

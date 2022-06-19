@@ -337,18 +337,16 @@ def get_enjoy_point_data(code):
         # 네티즌 관람 포인트
         ll = [NETIZEN]
         for netizen_point_raw in netizen_point_raw_list:
-            ll.append({netizen_point_raw.select("strong")[
-                      0].text: netizen_point_raw.select("span.grp_score")[0].text})
-        # # print(ll)
+            ll.append({netizen_point_raw.select("span.grp_score")[0].text})
+        print(ll)
         # 관람객 관람 포인트
         ll2 = [VIEWER]
         for watcher_point_raw in watcher_point_raw_list:
-            ll2.append({watcher_point_raw.select("strong")[
-                       0].text: watcher_point_raw.select("span.grp_score")[0].text})
-        # # print(ll2)
-        return ll.extend(ll2)  # 두 배열 합쳐서...
+            ll2.append({watcher_point_raw.select("span.grp_score")[0].text})
+        print(ll2)
+        return [ll,ll2]  # 두 배열 합쳐서...
     else:
-        # print(f"enjoy point data permission denied on url : {url}")
+        print(f"enjoy point data permission denied on url : {url}")
         return None
 
 
@@ -596,5 +594,5 @@ if __name__ == "__main__":
     # [conn,cur] = open_db()
     # a = get_data_from_review_url(196854)
     # print(a)
-    # # print(get_photo_data(code))
+    print(get_enjoy_point_data(code))
     # print(get_score_data(code))
