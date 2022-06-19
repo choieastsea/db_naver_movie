@@ -94,10 +94,10 @@ def insert_movie():
                     mpeople = [int(act[1]),act[0] ,act[2],  act[3]]
                     commitq(conn,curs,SQL.people,mpeople)
 
-                movie_appearance = [int(act[1]),movie_code,act[5]]
-                commitq(conn,curs,SQL.movie_appearance,movie_appearance)
-                casting = [int(act[1]),movie_code,act[4]]
-                commitq(conn,curs,SQL.casting,casting)
+                    movie_appearance = [int(act[1]),movie_code,act[5]]
+                    commitq(conn,curs,SQL.movie_appearance,movie_appearance)
+                    casting = [int(act[1]),movie_code,act[4]]
+                    commitq(conn,curs,SQL.casting,casting)
 
         # 영화인 - 서브배우
         if subactor!=None:
@@ -112,11 +112,11 @@ def insert_movie():
                     commitq(conn,curs,SQL.people,mpeople)
 
 
-                movie_appearance = [int(act[1]),movie_code,act[2]]
-                commitq(conn,curs,SQL.movie_appearance,movie_appearance)
+                    movie_appearance = [int(act[1]),movie_code,act[2]]
+                    commitq(conn,curs,SQL.movie_appearance,movie_appearance)
 
-                casting = [int(act[1]),movie_code,None]
-                commitq(conn,curs,SQL.casting,casting)
+                    casting = [int(act[1]),movie_code,None]
+                    commitq(conn,curs,SQL.casting,casting)
 
         
         # 영화인 - 감독
@@ -133,14 +133,14 @@ def insert_movie():
                     commitq(conn,curs,SQL.people,mpeople)
 
 
-                movie_appearance = [int(act[1]),movie_code,None]
-                commitq(conn,curs,SQL.movie_appearance,movie_appearance)
+                    movie_appearance = [int(act[1]),movie_code,None]
+                    commitq(conn,curs,SQL.movie_appearance,movie_appearance)
 
-                # 명대사 quotes get 함수 & for문
-                # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
+                    # 명대사 quotes get 함수 & for문
+                    # quotes = [act[1],movie_code,"명대사 1 ", "추천수 (int)"]
 
-                casting = [int(act[1]),movie_code,"감독"]
-                commitq(conn,curs,SQL.casting,casting)
+                    casting = [int(act[1]),movie_code,"감독"]
+                    commitq(conn,curs,SQL.casting,casting)
 
         
         # 영화인 - 제작진
