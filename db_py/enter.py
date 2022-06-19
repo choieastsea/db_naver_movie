@@ -11,7 +11,7 @@ def get_url():
     # print(element)
     addr=[]
 
-    flag = 0
+    flag = 6
     link=""
     i=0
     while i <len(element):
@@ -52,7 +52,7 @@ def get_url():
             i = i+1
 
         
-        if i == 6 :
+        if i == 8 :
             break
 
     return addr

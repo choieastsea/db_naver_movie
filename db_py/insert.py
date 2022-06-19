@@ -173,11 +173,11 @@ def insert_movie():
 
         
         # 연관영화
-        # relates = get_relate(movie_code)
-        # if relates !=None:
-        #     for relate_movie in relates:
-        #         insert_value = [movie_code, int(relate_movie)]
-        #         commitq(SQL.relate_movie,insert_value)
+        relates = get_relate(movie_code)
+        if relates !=None:
+            for relate_movie in relates:
+                insert_value = [movie_code, int(relate_movie), int(relate_movie)]
+                commitq(conn,curs,SQL.relate_movie,insert_value)
 
 
         # 한줄평
@@ -325,7 +325,8 @@ def commitq(conn,curs,flag, a):
         values (%s,%s, %s, %s);"""
     elif flag== SQL.relate_movie :
         sql = """insert IGNORE into relate_movie (movie_code, movie_code1) 
-        values (%s, %s);"""
+        select %s, %s from relate_movie
+        where exists (select * from movie m where m.movie_code=%s);"""
     elif flag== SQL.comment :
         sql = """insert IGNORE into comment (movie_code, score, comment , type) 
         values (%s, %s, %s,%s);"""
