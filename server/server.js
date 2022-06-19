@@ -85,27 +85,30 @@ app.get(`/api/movie/review`, async (req, res) => {
   const code = req.query.code;
   const page = req.query.page;
   try {
+    const [firstrow] = await pool.query(
+      `select review_id from review where movie_code=${code} order by review_id limit 1;`
+    );
+    const [totalrow] = await pool.query(
+      `select count(*) as cnt from review where movie_code=${code};`
+    );
+    const total_count = totalrow[0].cnt;
+    // console.log(firstrow);
+    const offset = parseInt(firstrow[0].review_id) + (page - 1) * 10 - 1;
+    // console.log(offset);
+
     const [row] = await pool.query(
-      `select * from review where movie_code=${code} and review_id > ${
-        (page - 1) * 10
-      } limit 10;`
+      `select * from review where movie_code=${code} and review_id > ${offset} limit 10;`
     );
     const review_list = [];
     for (let i = 0; i < row.length; i++) {
       const review = row[i];
       // console.log(review);
       review_list.push({
-        id: review.review_id,
-        content: review.contents,
-        title: review.title,
-        view_num: review.view_num,
-        good: review.good,
-        date: review.date,
-        writer: review.writer,
+        review,
       });
       console.log(review_list);
     }
-    res.json({ result: "success", review_list, length: row.length });
+    res.json({ result: "success", review_list, length: total_count });
   } catch (e) {
     console.log(e);
     res.json({ result: "fail" });
@@ -264,6 +267,18 @@ app.get("/api/person/filmography", async (req, res) => {
     and m.movie_code = c.movie_code
     and p.people_code = "${code}";`);
     res.json({ result: "success", name: actor_name[0].name, data: row });
+  } catch (e) {
+    console.log(e);
+    res.json({ result: "fail", data: e });
+  }
+});
+app.get("api/movie/relate", async (req, res) => {
+  const code = req.query.code;
+  try {
+    const [movie_list] = await pool.query(
+      `select r.movie_code1 from relate_movie r, movie m where m.movie_code = r.movie_code and m.movie_code =${code};`
+    );
+    res.json({ result: "success", movie_list, length: row.length });
   } catch (e) {
     console.log(e);
     res.json({ result: "fail", data: e });
