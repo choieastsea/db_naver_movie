@@ -46,10 +46,12 @@ def get_url():
             link += element3[0]['href']
 
             pass
-            
+        
         else:
             flag = 0
             i = i+1
+
+        
         if i == 6 :
             break
 

@@ -63,6 +63,7 @@ def insert_movie():
     [conn,curs] = open_db()
 
     addr = get_url() # addr은 영화 코드 배열
+    # addr = [196854]
     mpeople_index=int(147483647)
     for movie_code2 in addr:
         movie_code = int(movie_code2)
@@ -200,7 +201,7 @@ def insert_movie():
                 if review[1]==None: review[1]=0
                 if review[4]==None: review[4]=0
                 if review[5]==None: review[5]=0
-                
+
                 insert_value = [movie_code, review[0],int(review[4]),int(review[5]),review[2],review[3],review[6],int(review[1])]
                 commitq(conn,curs,SQL.review,insert_value)
 
@@ -259,10 +260,11 @@ def insert_movie():
 
         # enjoy_point
         eps = get_enjoy_point_data(movie_code)
-        if eps !=None:
-            for ep in eps:
-                insert_value = [movie_code,ep[1],ep[2],ep[3],ep[4],ep[5],int(ep[0])]
-                commitq(conn,curs,SQL.enjoy_point,insert_value)
+        if eps!=None and len(eps) > 2 :
+            insert_value = [movie_code,eps[1],eps[2],eps[3],eps[4],eps[5],int(eps[0])]
+            commitq(conn,curs,SQL.enjoy_point,insert_value)
+            insert_value = [movie_code,eps[7],eps[8],eps[9],eps[10],eps[11],int(eps[6])]
+            commitq(conn,curs,SQL.enjoy_point,insert_value)
 
 
         # satifying_netizen
@@ -322,8 +324,8 @@ def commitq(conn,curs,flag, a):
         sql = """insert IGNORE into casting (people_code, movie_code, casting_name) 
         values (%s, %s, %s);"""
     elif flag== SQL.mpeople_sub :
-        sql = """insert IGNORE into mpeople_sub (movie_code, name, casting) 
-        values (%s, %s, %s);"""
+        sql = """insert IGNORE into mpeople_sub (mpeople_sub_id,movie_code, name, casting) 
+        values (%s,%s, %s, %s);"""
     elif flag== SQL.relate_movie :
         sql = """insert IGNORE into relate_movie (movie_code, movie_code1) 
         values (%s, %s);"""
@@ -331,8 +333,8 @@ def commitq(conn,curs,flag, a):
         sql = """insert IGNORE into comment (movie_code, score, comment , type) 
         values (%s, %s, %s,%s);"""
     elif flag== SQL.review :
-        sql = """insert IGNORE into review (review_id, movie_code, title , view_num, good , date , writer , contents ) 
-        values (%s, %s, %s,%s,%s,%s,%s,%s);"""
+        sql = """insert IGNORE into review ( movie_code, title , view_num, good , date , writer , contents ,review_score) 
+        values (%s, %s,%s,%s,%s,%s,%s,%s);"""
     elif flag== SQL.score :
         sql = """insert IGNORE into score (movie_code, score, type , comment_number) 
         values (%s, %s, %s,%s);"""

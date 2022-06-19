@@ -587,13 +587,14 @@ def insertTitle(title, conn, cur):
 
 if __name__ == "__main__":
     code = 192608
-    code_test = 216100
+    code_test = 196854
     # 영화 페이지 기본 url
     url_mold = f"https://movie.naver.com/movie/bi/mi/basic.naver?code={code}"
     url1 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=192608"
     url2 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=17149"
     url3 = "https://movie.naver.com/movie/bi/mi/basic.naver?code=182016"
     # [conn,cur] = open_db()
-    # get_data_from_review_url(code_test)
+    # a = get_data_from_review_url(196854)
+    # print(a)
     # # print(get_photo_data(code))
     # print(get_score_data(code))
