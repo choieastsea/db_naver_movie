@@ -1,11 +1,18 @@
 import { useState } from "react";
 import Button from "@mui/material/Button";
-import { List, ListItemButton, TextField } from "@mui/material";
+import {
+  List,
+  ListItemButton,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import { useNavigate } from "react-router-dom";
 export const Search = () => {
   /* Search Bar와 아래의 자동 완성 리스트까지 */
   const [userInput, setUserInput] = useState("");
+  const [which, setWhich] = useState("영화");
   const [autoFillList, setAutoFillList] = useState([
     /* 영화 최대 5개, 인물 최대 3인 정도만 받아볼까? */
   ]);
@@ -40,9 +47,22 @@ export const Search = () => {
       navigate(`/search?userInput=${userInput}`);
     }
   };
-
+  const handleChange = (e) => {
+    setWhich(e.target.value);
+  };
   return (
     <div>
+      {/* <Select
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        value={which}
+        onChange={handleChange}
+        size= "small"
+      >
+        <MenuItem value={"영화"}>영화 제목</MenuItem>
+        <MenuItem value={"영화인"}>영화인</MenuItem>
+        <MenuItem value={"장르"}>장르</MenuItem>
+      </Select> */}
       <TextField
         id="outlined-basic"
         label="영화/영화인 검색"
@@ -60,7 +80,7 @@ export const Search = () => {
         onClick={onClickBtn}
       />
       <br />
-      {autoFillList.length !== 0 && <AutoFillList list={autoFillList} />}
+      {autoFillList?.length !== 0 && <AutoFillList list={autoFillList} />}
     </div>
   );
 };
@@ -84,12 +104,15 @@ const AutoFillList = ({ list }) => {
           e.movie_code ? (
             <li key={e.movie_code}>
               <ListItemButton href={`movie?code=${e.movie_code}`}>
-                {e.title_kor} ({e.release_date?.split(".")[0]})
+                {e.title_kor}{" "}
+                {e.release_date !== null
+                  ? `(${e.release_date.split(".")[0]})`
+                  : ""}
               </ListItemButton>
             </li>
           ) : (
             <li key={e.mpeople_code}>
-              <ListItemButton href={`person?code=${e.mpeople_code}`}>
+              <ListItemButton href={`person?code=${e.people_code}`}>
                 {e.name}
               </ListItemButton>
             </li>

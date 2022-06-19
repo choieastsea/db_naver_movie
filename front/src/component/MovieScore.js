@@ -1,44 +1,53 @@
-import { Pagination, Box } from "@mui/material";
+import { Pagination, Box, Rating } from "@mui/material";
 import { useEffect, useState } from "react";
 export const Score = ({ movie_code }) => {
   /* need update to score data from review */
-  const [reviewData, setReviewData] = useState({});
+  const [commentData, setCommentData] = useState({});
   const [curPage, setCurPage] = useState(1);
   useEffect(() => {
     async function fetchReviewData() {
       const data = await fetch(
-        `api/movie/review?code=${movie_code}&page=${curPage}`
+        `api/movie/comment?code=${movie_code}&page=${curPage}`
       );
       const res = await data.json();
       console.log(res);
-      setReviewData(res);
+      setCommentData(res);
     }
     fetchReviewData();
   }, [movie_code, curPage]);
 
-  const { review_list } = reviewData;
+  const { comment_list } = commentData;
 
-  let count = parseInt(reviewData.length / 10) + 1; //총 페이지 수
+  let count = parseInt(commentData.length / 10);
+  if (commentData.length % 10 !== 0) {
+    count += 1;
+  }
   // let count = 10;
 
   const onPageChange = (event, page) => {
     console.log(page);
     setCurPage(page);
   };
-  return reviewData?.length === 0 ? (
-    <div>리뷰가 없습니다.</div>
+  return commentData?.length === 0 || commentData?.result === "fail" ? (
+    <div>평점이 없습니다.</div>
   ) : (
     <div>
-      <p>총 리뷰 : {reviewData.length}건</p>
+      {/* <p>총 리뷰 : {commentData.length}건</p> */}
       <ul>
         {/* pagination needed */}
-        {review_list?.map((e) => (
-          <li key={e.id}>
+        {comment_list?.map((e) => (
+          <li key={e.comment_id}>
             <a href={`/movie/review?code=${movie_code}&user=4807776`}>
               {e.writer}
             </a>
             {/* needed to change! */}
-            <p>{e.content}</p>
+            <Rating
+              name="read-only"
+              value={e.comment.score / 2}
+              precision={0.1}
+              readOnly
+            />
+            <p>{e.comment.comment}</p>
           </li>
         ))}
       </ul>

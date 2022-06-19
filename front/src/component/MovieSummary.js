@@ -15,10 +15,10 @@ export default function MovieSummary({ movieData }) {
     <div>
       <h2>줄거리</h2>
       <p>{movieData.story}</p>
-      {movieData?.making_note && (
+      {movieData?.makingnote && (
         <Button onClick={handleOnClick}>{buttonText}</Button>
       )}
-      {showMakingNote && <p>{movieData.making_note}</p>}
+      {showMakingNote && <p>{movieData.makingnote}</p>}
     </div>
   );
 }

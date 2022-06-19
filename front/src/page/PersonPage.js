@@ -55,12 +55,11 @@ export const PersonPage = () => {
 
 const CastingCard = ({ data }) => {
   const navigate = useNavigate();
-
   const toFilmPage = () => {
     navigate(`/movie?code=${data.movie_code}`);
   };
   return (
-    <Grid item xs={3}>
+    <Grid item xs={2}>
       <Card>
         <CardActionArea onClick={toFilmPage}>
           <CardContent>
@@ -69,7 +68,8 @@ const CastingCard = ({ data }) => {
               color="text.secondary"
               gutterBottom
             >
-              {data.title_kor}({data.release_date.split(".")[0]})
+              {data.title_kor}
+              {data.release_date && `(${data.release_date.split(".")[0]})`}
             </Typography>
             <Typography
               sx={{ fontSize: 15 }}
@@ -80,7 +80,11 @@ const CastingCard = ({ data }) => {
             </Typography>
             <CardMedia
               component="img"
-              image={`${data.img_url}`}
+              image={`${
+                data.img_url !== null
+                  ? data.img_url
+                  : "https://ssl.pstatic.net/static/movie/2012/06/dft_img133x190.png"
+              }`}
               alt={`${data.img_url}`}
             />
           </CardContent>
